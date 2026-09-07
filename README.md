@@ -6,6 +6,8 @@ Windows IOCP 기반 C++ MMORPG 서버 프로젝트입니다. Unity 클라이언�
 
 [BraveForest 플레이 영상 보기](https://youtu.be/IJQr8NuZfT0)
 
+[Unity 클라이언트 소스](https://github.com/skl234/BraveForest-Client)
+
 ## 구성
 
 - `ProxyServer`: 클라이언트 연결과 로그인/존 서버 라우팅
