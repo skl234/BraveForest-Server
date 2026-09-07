@@ -24,9 +24,7 @@
 | logPath | Log.log |
 | backServerInfoList | 로그인 30003, ZoneId 1 마을 30004, ZoneId 2 비기너존 30005 |
 
-주의: 이전에 논의했던 총 1만 명과 별개로 **현재 Proxy 코드의 연결 풀 상한은 100000**입니다. 이번 소스 정리에서는 값을 바꾸지 않았습니다. 이 값은 실제 처리 가능한 동접 성능을 의미하지 않습니다.
-
-옛 ProxyServer.ini/LoginServer.ini는 사용하지 않습니다. 프록시 INI의 남은 프로젝트 등록도 정리했습니다.
+연결 풀 상한은 메모리에 확보할 연결 객체 수입니다. 실제 동시 접속 처리 성능을 측정한 값은 아닙니다.
 
 ## LoginServer
 
@@ -61,10 +59,10 @@
 
 ZoneInfo/Field/Spawn 파일은 INI와 같은 디렉터리를 기준으로 상대 경로를 해석합니다. DB 로컬 설정은 exe 디렉터리의 Config/Database.local.ini입니다. ZoneServer의 첫 실행 인자는 ZoneServer.ini 경로를 대체할 수 있지만 DB 로컬 설정의 위치를 바꾸지는 않습니다.
 
-## 이번 변경의 범위
+## DB 설정과 라이브러리 연결
 
-DB User / Password / DSN은 로컬 INI에서 읽습니다. 설정 클래스 분리 후에도 기존 설정값, 실행 인자, 경로 우선순위는 유지했습니다. 사용자 계정/캐릭터 DB 데이터는 변경하지 않았습니다.
+DB User / Password / DSN은 로컬 INI에서 읽습니다.
 
 `Config/Database.example.ini`는 공개할 수 있는 예제입니다. `Database.local.ini`는 실제 값이므로 Git에서 제외합니다. VS 빌드가 로컬 파일을 개발 출력 및 Release 배포 폴더의 Config로 복사합니다. exe 옆 파일이 없으면 오류를 출력하고 종료하며 하드코딩된 비밀번호로 대체하지 않습니다.
 
-Debug와 Release 모두 `.vcxproj`의 프로젝트 참조로 라이브러리를 연결합니다. `main()`에 있던 Debug 전용 `.lib` 경로는 제거했습니다. 새 라이브러리 소스를 빌드하지 않고 예전 `.lib`를 연결하는 문제를 방지합니다.
+Debug와 Release 모두 `.vcxproj`의 프로젝트 참조로 라이브러리를 연결합니다.

@@ -57,3 +57,19 @@
 /Tools/DummyClient/RestoreInitialSpawns.ps1
 /Tools/DummyClient/VerifyDatabase.ps1
 /Tools/DummyClient/TEST_RESULTS.md
+
+# Local notes and retired tools
+/CURRENT_STATE.md
+/GITHUB_GUIDE.md
+/Docs/FinalRefactor.md
+/Docs/SourceCleanup.md
+/DummyReConnect/
+/ServerMonitor/
+/TestProject/
+/ZoneServerTest/
+/ZoneServer/FieldData/
+/ZoneServer/Database/
+/ZoneServer/MonsterBehaviourMigration.sql
+/ProxyServer/ProxyServer 정보.txt
+/Tools/DummyClient/BuildTestHelper.cmd
+/Tools/DummyClient/TestServerConsole.cpp

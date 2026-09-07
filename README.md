@@ -36,11 +36,12 @@ Windows IOCP 기반 C++ MMORPG 서버 프로젝트입니다. Unity 클라이언�
 
 ## 문서
 
-- [현재 구현·자료 기준](CURRENT_STATE.md)
 - [존/필드 파일과 DB 역할](Data/README.md)
 - [서버 설정 클래스와 INI 구분](Docs/ServerConfiguration.md)
-- [대상 번호 통일과 최종 검증](Docs/FinalRefactor.md)
-- [이번 정리 및 검증 결과](Docs/SourceCleanup.md)
-- [GitHub 업로드 순서 및 영상 구성](GITHUB_GUIDE.md)
+- [실행 폴더 구성](Build/ServerRuntime/README.md)
 
-Unity 렌더링 에셋은 별도 라이선스 자산입니다. 테스트에서 측정하지 않은 최대 처리량이나 무결점 동작을 보장하는 프로젝트는 아닙니다.
+## 더미 클라이언트
+
+`Tools/DummyClient/Build.cmd`로 빌드합니다. 한 프로세스에서 500개 계정에 접속하고 이동 패킷을 전송합니다. `t` 입력 후 Enter를 누르면 접속 중인 더미 중 무작위로 최대 100명이 채팅하고, `q` 입력 후 Enter를 누르면 종료합니다. 테스트용 계정과 캐릭터는 별도로 준비해야 합니다.
+
+채널 수와 연결 풀 크기는 설정값이며, 해당 인원의 동시 처리 성능을 측정한 결과를 뜻하지 않습니다.
