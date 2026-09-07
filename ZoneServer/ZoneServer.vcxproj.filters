@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="App">
+      <UniqueIdentifier>{5c1b7468-b017-441a-bdff-2c9542275796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Service">
+      <UniqueIdentifier>{2a614e0f-f26a-45d3-b90e-9a6a4f0a451b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PacketTask">
+      <UniqueIdentifier>{f84d6555-ae5a-4d4a-8816-1bf8133a724c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AstrtNavigation">
+      <UniqueIdentifier>{ccd09b7f-1d39-442b-a089-d4818ae06bec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FieldObject">
+      <UniqueIdentifier>{7c5ebee1-4ec6-46ef-89b8-38827fc19a11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sector">
+      <UniqueIdentifier>{8ea22af8-23ff-4608-8bab-828e99443afa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Field">
+      <UniqueIdentifier>{a8c1351f-7334-4557-9b7c-ae570d01d54d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session">
+      <UniqueIdentifier>{8b041edc-2879-4b76-a14a-ffa47c4ad306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SessionManager">
+      <UniqueIdentifier>{a9d9081b-f16f-48a1-b710-6a04ff8f1044}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FieldObject\Monster">
+      <UniqueIdentifier>{ccdd3a73-b7d2-4097-879e-4d084881dc25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FieldObject\Player">
+      <UniqueIdentifier>{2f72a02a-0789-4cab-92d7-b700f72a37e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Channel">
+      <UniqueIdentifier>{6cf1a593-6778-4b89-8a2b-698b5c92d02f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DB">
+      <UniqueIdentifier>{71cbfad4-b900-48ae-9b90-7fd946b61932}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Transform">
+      <UniqueIdentifier>{4cf3f992-41b5-4c9b-88bc-e1158cdf7e3c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ZoneServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Cell.cpp">
+      <Filter>AstrtNavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="CellGrid.cpp">
+      <Filter>AstrtNavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="Navigation.cpp">
+      <Filter>AstrtNavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="Navigator.cpp">
+      <Filter>AstrtNavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldObject.cpp">
+      <Filter>FieldObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>Sector</Filter>
+    </ClCompile>
+    <ClCompile Include="SectorGrid.cpp">
+      <Filter>Sector</Filter>
+    </ClCompile>
+    <ClCompile Include="Field.cpp">
+      <Filter>Field</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionManager.cpp">
+      <Filter>SessionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>FieldObject\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>FieldObject\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerManager.cpp">
+      <Filter>FieldObject\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterManager.cpp">
+      <Filter>FieldObject\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterScheduler.cpp">
+      <Filter>FieldObject\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Channel.cpp">
+      <Filter>Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="ChannelManager.cpp">
+      <Filter>Channel</Filter>
+    </ClCompile>
+	<ClCompile Include="CombatDamageCalculator.cpp">
+	  <Filter>FieldObject</Filter>
+	</ClCompile>
+	<ClCompile Include="CharacterDB.cpp">
+	  <Filter>DB</Filter>
+	</ClCompile>
+	<ClCompile Include="PlayerStatDB.cpp">
+	  <Filter>DB</Filter>
+	</ClCompile>
+    <ClCompile Include="MonsterDBLoader.cpp">
+      <Filter>DB</Filter>
+    </ClCompile>
+    <ClCompile Include="ZoneServerService.cpp">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketTask.cpp">
+      <Filter>PacketTask</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Cell.h">
+      <Filter>AstrtNavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="CellGrid.h">
+      <Filter>AstrtNavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="Navigation.h">
+      <Filter>AstrtNavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="Navigator.h">
+      <Filter>AstrtNavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="PATH_NODE.h">
+      <Filter>AstrtNavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="FieldObject.h">
+      <Filter>FieldObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>Sector</Filter>
+    </ClInclude>
+    <ClInclude Include="SectorGrid.h">
+      <Filter>Sector</Filter>
+    </ClInclude>
+    <ClInclude Include="FieldObjectType.h">
+      <Filter>FieldObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Field.h">
+      <Filter>Field</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>SessionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>FieldObject\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>FieldObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterScheduler.h">
+      <Filter>FieldObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerManager.h">
+      <Filter>FieldObject\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterManager.h">
+      <Filter>FieldObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterSpawnInfo.h">
+      <Filter>FieldObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Channel.h">
+      <Filter>Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="ChannelManager.h">
+      <Filter>Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerState.h">
+      <Filter>FieldObject\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassType.h">
+      <Filter>FieldObject\Player</Filter>
+    </ClInclude>
+	<ClInclude Include="CombatDamageCalculator.h">
+	  <Filter>FieldObject</Filter>
+	</ClInclude>
+    <ClInclude Include="MonsterType.h">
+      <Filter>FieldObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterState.h">
+      <Filter>FieldObject\Monster</Filter>
+    </ClInclude>
+	<ClInclude Include="CharacterDB.h">
+	  <Filter>DB</Filter>
+	</ClInclude>
+	<ClInclude Include="PlayerStatDB.h">
+	  <Filter>DB</Filter>
+	</ClInclude>
+    <ClInclude Include="ZoneServerConfig.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\ZoneData.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterSpawnData.h">
+      <Filter>FieldObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterDBLoader.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="ZoneServerService.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketTask.h">
+      <Filter>PacketTask</Filter>
+    </ClInclude>
+    <ClInclude Include="VECTOR3.h">
+      <Filter>Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="QUATERNION.h">
+      <Filter>Transform</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ZoneServerConfig.cpp" />
+  </ItemGroup>
+</Project>

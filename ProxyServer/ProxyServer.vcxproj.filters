@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Connection">
+      <UniqueIdentifier>{0fb64410-d992-4a65-8783-c1c9c7cd583c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ConnectionManager">
+      <UniqueIdentifier>{3e8926c3-7fe3-45a7-9c29-a51a8cf63254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{e48d29ea-a119-41aa-8a41-1fc857a4c63c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Monitor">
+      <UniqueIdentifier>{7e10a17d-df9e-447b-8206-cf6797396b8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Service">
+      <UniqueIdentifier>{ace6172b-2497-4219-872e-148c2b4649ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PacketTask">
+      <UniqueIdentifier>{3addeb31-6647-4c63-80fb-2f4b44ac37c4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ProxyServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientConnection.cpp">
+      <Filter>Connection</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientConnectionManager.cpp">
+      <Filter>ConnectionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Monitor.cpp">
+      <Filter>Monitor</Filter>
+    </ClCompile>
+    <ClCompile Include="ProxyService.cpp">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerConnectionManager.cpp">
+      <Filter>ConnectionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketTask.cpp">
+      <Filter>PacketTask</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PacketTask.h">
+      <Filter>PacketTask</Filter>
+    </ClInclude>
+    <ClInclude Include="PROXYSERVER_CONFIG.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientConnection.h">
+      <Filter>Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientConnectionManager.h">
+      <Filter>ConnectionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Monitor.h">
+      <Filter>Monitor</Filter>
+    </ClInclude>
+    <ClInclude Include="ProxyService.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerConnectionManager.h">
+      <Filter>ConnectionManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ProxyServer 정보.txt" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ProxyServerConfig.h" />
+    <ClCompile Include="ProxyServerConfig.cpp" />
+  </ItemGroup>
+</Project>

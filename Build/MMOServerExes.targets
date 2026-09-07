@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MMOServerRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</MMOServerRoot>
+    <MMOServerExeDir>$(MMOServerRoot)MMOServerExes\</MMOServerExeDir>
+    <!-- 실행 파일이 만들어진 다음 복사. VS의 파일 복사 추적도 그대로 사용 -->
+    <CopyFileBeforeTargets></CopyFileBeforeTargets>
+    <CopyFileAfterTargets>Build</CopyFileAfterTargets>
+    <CopyRetryCount>3</CopyRetryCount>
+    <CopyRetryDelayMilliseconds>200</CopyRetryDelayMilliseconds>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectName)'!='ZoneServer'">
+    <CopyFileToFolders Include="$(TargetPath)">
+      <DestinationFolders>$(MMOServerExeDir)$(MSBuildProjectName)\</DestinationFolders>
+      <DestinationFileName>$(TargetFileName)</DestinationFileName>
+    </CopyFileToFolders>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectName)'=='LoginServer'">
+    <CopyFileToFolders Include="$(MMOServerRoot)Config\Database.local.ini" Condition="Exists('$(MMOServerRoot)Config\Database.local.ini')">
+      <DestinationFolders>$(MMOServerExeDir)LoginServer\Config\</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(MMOServerRoot)Data\ZoneInfo.txt">
+      <DestinationFolders>$(MMOServerExeDir)LoginServer\Data\</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectName)'=='ZoneServer'">
+    <CopyFileToFolders Include="$(MMOServerRoot)Config\Database.local.ini" Condition="Exists('$(MMOServerRoot)Config\Database.local.ini')">
+      <DestinationFolders>$(MMOServerExeDir)ZoneServer_Town\Config\;$(MMOServerExeDir)ZoneServer_Beginner\Config\</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(TargetPath)">
+      <DestinationFolders>$(MMOServerExeDir)ZoneServer_Town\;$(MMOServerExeDir)ZoneServer_Beginner\</DestinationFolders>
+      <DestinationFileName>ZoneServer.exe</DestinationFileName>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(MMOServerRoot)ZoneServer\ZoneServer_Town.ini">
+      <DestinationFolders>$(MMOServerExeDir)ZoneServer_Town\Config\</DestinationFolders>
+      <DestinationFileName>ZoneServer.ini</DestinationFileName>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(MMOServerRoot)ZoneServer\ZoneServer.ini">
+      <DestinationFolders>$(MMOServerExeDir)ZoneServer_Beginner\Config\</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(MMOServerRoot)Data\ZoneInfo.txt">
+      <DestinationFolders>$(MMOServerExeDir)ZoneServer_Town\Data\;$(MMOServerExeDir)ZoneServer_Beginner\Data\</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(MMOServerRoot)Data\TownField.txt;$(MMOServerRoot)Data\TownSpawn.txt">
+      <DestinationFolders>$(MMOServerExeDir)ZoneServer_Town\Data\</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(MMOServerRoot)Data\BeginnerZoneField.txt;$(MMOServerRoot)Data\BeginnerZoneSpawn.txt">
+      <DestinationFolders>$(MMOServerExeDir)ZoneServer_Beginner\Data\</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="$(MSBuildThisFileDirectory)ServerRuntime\README.md">
+      <DestinationFolders>$(MMOServerExeDir)</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>

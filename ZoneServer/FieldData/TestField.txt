@@ -1,0 +1,11 @@
+WidthX 12
+WidthZ 12
+CellRows 12
+CellCols 12
+SectorWidth 4
+SectorRows 3
+SectorCols 3
+BlockCount 0
+MonsterCount 2
+Monster 3 5.0 5.0 2.0 8.0 1.5 5.0
+Monster 0 10.0 10.0 3.0 10.0 2.0 7.0

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LocalDatabaseConfig>$(MSBuildThisFileDirectory)Config\Database.local.ini</LocalDatabaseConfig>
+  </PropertyGroup>
+  <Target Name="CopyLocalDatabaseConfig" AfterTargets="Build"
+          Condition="('$(MSBuildProjectName)'=='LoginServer' Or '$(MSBuildProjectName)'=='ZoneServer') And Exists('$(LocalDatabaseConfig)')">
+    <MakeDir Directories="$(TargetDir)Config" />
+    <Copy SourceFiles="$(LocalDatabaseConfig)" DestinationFolder="$(TargetDir)Config" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

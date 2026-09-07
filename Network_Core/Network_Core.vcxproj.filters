@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="IOCP">
+      <UniqueIdentifier>{fd27956f-3765-420d-a63c-57732859a69d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCP">
+      <UniqueIdentifier>{8ade8bf8-f21f-475f-af6b-5a97270c3a5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Overlapped">
+      <UniqueIdentifier>{1ecde985-9832-4879-adf2-2f54cfd184da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IniLoader">
+      <UniqueIdentifier>{c8b12aee-6042-4b7d-8bc1-ffb9439fd84e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Service">
+      <UniqueIdentifier>{69b549f7-4716-44db-80dc-debc2d843af2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{93fb433a-8d67-4c9e-846d-e3ddae28b8a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IOCP_TPS">
+      <UniqueIdentifier>{5a3db952-5ced-45f0-89b4-5ee94de78f3d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="IOCP.cpp">
+      <Filter>IOCP</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPAcceptor.cpp">
+      <Filter>TCP</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPConnection.cpp">
+      <Filter>TCP</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlappedManager.cpp">
+      <Filter>Overlapped</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerService.cpp">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPServer.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPTPSManager.cpp">
+      <Filter>IOCP_TPS</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IOCP.h">
+      <Filter>IOCP</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPConnection.h">
+      <Filter>TCP</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPAcceptor.h">
+      <Filter>TCP</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedEx.h">
+      <Filter>Overlapped</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedManager.h">
+      <Filter>Overlapped</Filter>
+    </ClInclude>
+    <ClInclude Include="INI_CONFIG.h">
+      <Filter>IniLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerService.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPServer.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCP_TPS.h">
+      <Filter>IOCP_TPS</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPTPSManager.h">
+      <Filter>IOCP_TPS</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

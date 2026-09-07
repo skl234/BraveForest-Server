@@ -1,0 +1,14 @@
+root = true
+
+[*.{h,hpp,c,cpp,cs}]
+charset = utf-8-bom
+end_of_line = crlf
+indent_style = tab
+indent_size = 4
+tab_width = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{sln,vcxproj,filters,props,targets}]
+end_of_line = crlf
+insert_final_newline = true

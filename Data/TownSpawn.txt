@@ -1,0 +1,2 @@
+ZoneId 1
+SpawnCount 0

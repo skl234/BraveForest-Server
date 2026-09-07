@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Log">
+      <UniqueIdentifier>{aeb2bf3e-cf04-47b6-9b73-5ea6eb24cf73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{80960909-32f4-49cd-af6d-9ff298e9a817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Timer">
+      <UniqueIdentifier>{34163d84-e4df-4333-936f-29835fe9079e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Singleton">
+      <UniqueIdentifier>{b3016fce-d216-4c89-b8f1-a87bb36b117c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RandomNumberGenerator">
+      <UniqueIdentifier>{1cfc12ee-dd69-4a1d-b9dd-afaba7c003fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Job">
+      <UniqueIdentifier>{3b081d13-0bb3-4a57-87d6-57fda0a1c375}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Queue">
+      <UniqueIdentifier>{398a5acc-2192-4964-ac74-1976bd8cf498}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Thread">
+      <UniqueIdentifier>{f4193d95-a0ff-4c3e-9e44-accdd430e27c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LockGuard">
+      <UniqueIdentifier>{b46a4550-7755-4664-934f-7c941f93216c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Macro">
+      <UniqueIdentifier>{5f87d2b9-6683-464c-b862-1f02fa465ebe}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="LogManager.cpp">
+      <Filter>Log</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryStream.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="SmartBuffer.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomNumberGenerator.cpp">
+      <Filter>RandomNumberGenerator</Filter>
+    </ClCompile>
+    <ClCompile Include="MPSCJobExecutor.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadManager.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="RingBuffer.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="LockGuard.cpp">
+      <Filter>LockGuard</Filter>
+    </ClCompile>
+    <ClCompile Include="MPSCExecutorManager.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+    <ClCompile Include="PseudoRandomNumberGenerator.cpp">
+      <Filter>RandomNumberGenerator</Filter>
+    </ClCompile>
+    <ClCompile Include="JobPool.cpp">
+      <Filter>Job</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LockGuard.h">
+      <Filter>LockGuard</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Singleton</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="LogManager.h">
+      <Filter>Log</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStream.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="SmartBuffer.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomNumberGenerator.h">
+      <Filter>RandomNumberGenerator</Filter>
+    </ClInclude>
+    <ClInclude Include="Job.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="MPSCJobExecutor.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="JOB_TPS.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadSafeQueue.h">
+      <Filter>Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="SwapQueue.h">
+      <Filter>Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadManager.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="JobPool.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="RingBuffer.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="UtilityMacros.h">
+      <Filter>Macro</Filter>
+    </ClInclude>
+    <ClInclude Include="MPSCExecutorManager.h">
+      <Filter>Job</Filter>
+    </ClInclude>
+    <ClInclude Include="PseudoRandomNumberGenerator.h">
+      <Filter>RandomNumberGenerator</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="INIFile.h" />
+    <ClCompile Include="INIFile.cpp" />
+  </ItemGroup>
+</Project>
