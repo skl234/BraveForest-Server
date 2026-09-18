@@ -38,7 +38,7 @@
 | CLoginServerConfig | accountConnectionCount=1, gameConnectionCount=1, packetTaskPoolSize=100000 |
 | 외부 txt | Data/ZoneInfo.txt를 CZoneData로 읽음. INI가 아님 |
 
-로그인의 maxClientConnection=1은 **프록시와 연결하는 소켓 수**입니다. 게임 유저를 1명만 받는다는 뜻이 아닙니다. 첫 실행 인자를 주면 ZoneInfo 파일 경로를 대체합니다.
+로그인의 maxClientConnection=1은 **프록시와 연결하는 소켓 수**입니다. 게임 유저를 1명만 받는다는 뜻이 아닙니다. 실행 인자는 사용하지 않고 EXE 폴더의 Data/ZoneInfo.txt를 읽습니다.
 
 ## ZoneServer
 
@@ -57,7 +57,7 @@
 
 현재 파일에는 MaxMonsterPerChannel=150이 들어 있지만, 코드에서 이 키를 읽을 때의 기본값은 512입니다. **파일에 키가 있으면 파일 값이 우선**합니다. 키 누락 시 기본값과 운영 설정은 구분해야 합니다.
 
-ZoneInfo/Field/Spawn 파일은 INI와 같은 디렉터리를 기준으로 상대 경로를 해석합니다. DB 로컬 설정은 exe 디렉터리의 Config/Database.local.ini입니다. ZoneServer의 첫 실행 인자는 ZoneServer.ini 경로를 대체할 수 있지만 DB 로컬 설정의 위치를 바꾸지는 않습니다.
+ZoneInfo/Field/Spawn 파일은 INI와 같은 디렉터리를 기준으로 상대 경로를 해석합니다. EXE 폴더의 Config/ZoneServer.ini와 Config/Database.local.ini를 읽으며 실행 인자는 사용하지 않습니다. Visual Studio의 Debug/Release 출력 폴더에서는 기본 파일이 없으면 기존 개발용 설정 경로를 확인합니다.
 
 ## DB 설정과 라이브러리 연결
 
