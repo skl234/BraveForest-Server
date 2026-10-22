@@ -15,6 +15,4 @@ C++로 만든 Windows IOCP 기반 MMORPG 서버입니다. 계정 인증, 캐릭�
 | ODBC_Core | DB 연결 풀과 쿼리·결과 처리 |
 | Common | 서버와 클라이언트가 사용하는 패킷·데이터 형식 |
 
-IOCP 스레드에서 받은 패킷을 Job으로 넘겨 처리합니다. Proxy는 세션 기준으로 실행기를 선택하고, Zone은 채널별 실행기에서 게임 로직을 처리합니다.
-
 [시연 영상](https://youtu.be/tBjsei8geok)
