@@ -20,5 +20,5 @@ struct ZONESERVER_CONFIG : public INI_CONFIG
 class CZoneServerConfig
 {
 public:
-	static bool Load(ZONESERVER_CONFIG& _config, const char* _configPath = nullptr);
+	static bool	Load(ZONESERVER_CONFIG& _config, const char* _configPath = nullptr);
 };

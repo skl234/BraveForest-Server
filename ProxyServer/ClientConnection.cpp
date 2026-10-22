@@ -58,3 +58,13 @@ void CClientConnection::SetLogoutPending(bool _pending)
 {
 	m_logoutPending.store(_pending);
 }
+
+bool CClientConnection::TryStartLogin()
+{
+	bool expected = false;
+	return m_loginPending.compare_exchange_strong(expected, true);
+}
+
+bool CClientConnection::IsLoginPending() { return m_loginPending.load(); }
+void CClientConnection::SetLoginPending(bool _pending) { m_loginPending.store(_pending); }
+bool CClientConnection::SetAcquired(bool _acquired) { return m_acquired.exchange(_acquired); }

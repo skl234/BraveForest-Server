@@ -15,6 +15,7 @@ void CPlayerManager::Initialize(uint64_t _size, const CPlayerStatDB* _playerStat
 	}
 }
 
+
 CPlayer* CPlayerManager::Acquire()
 {
 	if (m_pool.empty()) return nullptr;
@@ -39,6 +40,7 @@ void CPlayerManager::Release(CPlayer* _player)
 	m_acquiredList[objectNum] = false;
 	m_pool.emplace_back(_player);
 }
+
 
 CPlayer* CPlayerManager::Find(uint64_t _objectNum)
 {

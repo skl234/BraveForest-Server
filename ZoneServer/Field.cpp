@@ -86,7 +86,7 @@ bool CField::Initialize(const std::string& _infoPath, std::vector<MONSTER_SPAWN_
 		file >> name >> type >> spawnInfo.spawnPosition.x >> spawnInfo.spawnPosition.z >> spawnInfo.wanderRadius >> spawnInfo.maxAggroRange >> spawnInfo.respawnRadius >> respawnDelaySeconds;
 		if (name != "Monster") return false;
 		if (file.fail()) return false;
-		if (type > static_cast<uint64_t>(eMonsterType::Rat)) return false;
+		if (type > static_cast<uint64_t>(eMonsterType::Slime)) return false;
 		if (!IsValidPosition(spawnInfo.spawnPosition)) return false;
 		if (spawnInfo.wanderRadius < 0.0f) return false;
 		if (spawnInfo.maxAggroRange < 0.0f) return false;
@@ -111,6 +111,7 @@ bool CField::Initialize(const std::string& _infoPath, std::vector<MONSTER_SPAWN_
 
 	return true;
 }
+
 
 bool CField::Enter(CFieldObject* _object)
 {
@@ -190,25 +191,6 @@ bool CField::Move(CFieldObject* _object, const VECTOR3& _position)
 	return true;
 }
 
-CCellGrid* CField::GetCellGrid()
-{
-	return &m_cellGrid;
-}
-
-CSectorGrid* CField::GetSectorGrid()
-{
-	return &m_sectorGrid;
-}
-
-uint64_t CField::GetWidth_X()
-{
-	return m_widthX;
-}
-
-uint64_t CField::GetWidth_Z()
-{
-	return m_widthZ;
-}
 
 bool CField::IsWalkable(const VECTOR3& _position)
 {
@@ -275,21 +257,27 @@ bool CField::IsClearLine(const VECTOR3& _start, const VECTOR3& _end)
 	return true;
 }
 
-std::vector<CSector*> CField::CreateVisibleSectorList(CSector* _sector)
-{
-	std::vector<CSector*> sectorList;
-	if (_sector == nullptr) return sectorList;
 
-	sectorList.push_back(_sector);
-	std::vector<CSector*>& adjoiningSectorList = _sector->GetAdjoiningSectorList();
-	uint64_t size = static_cast<uint64_t>(adjoiningSectorList.size());
-	for (uint64_t i = 0; i < size; ++i)
-	{
-		if (adjoiningSectorList[i] == nullptr) continue;
-		sectorList.push_back(adjoiningSectorList[i]);
-	}
-	return sectorList;
+CCellGrid* CField::GetCellGrid()
+{
+	return &m_cellGrid;
 }
+
+CSectorGrid* CField::GetSectorGrid()
+{
+	return &m_sectorGrid;
+}
+
+uint64_t CField::GetWidth_X()
+{
+	return m_widthX;
+}
+
+uint64_t CField::GetWidth_Z()
+{
+	return m_widthZ;
+}
+
 
 bool CField::IsValidPosition(const VECTOR3& _position)
 {
@@ -313,6 +301,23 @@ bool CField::IsContainSector(std::vector<CSector*>& _sectorList, CSector* _secto
 		if (_sectorList[i] == _sector) return true;
 	}
 	return false;
+}
+
+
+std::vector<CSector*> CField::CreateVisibleSectorList(CSector* _sector)
+{
+	std::vector<CSector*> sectorList;
+	if (_sector == nullptr) return sectorList;
+
+	sectorList.push_back(_sector);
+	std::vector<CSector*>& adjoiningSectorList = _sector->GetAdjoiningSectorList();
+	uint64_t size = static_cast<uint64_t>(adjoiningSectorList.size());
+	for (uint64_t i = 0; i < size; ++i)
+	{
+		if (adjoiningSectorList[i] == nullptr) continue;
+		sectorList.push_back(adjoiningSectorList[i]);
+	}
+	return sectorList;
 }
 
 void CField::EnterVisibleSector(CFieldObject* _object, std::vector<CSector*>& _sectorList)

@@ -16,23 +16,26 @@ protected:
 	eFieldObjectType	m_objectType;
 	uint64_t			m_num;
 	bool				m_active;
+
 	VECTOR3				m_position;
 	float				m_rotationY;
 
-	CField*		m_field;
-	CSector*	m_sector;
+	CField*				m_field;
+	CSector*			m_sector;
 
 public:
 	CFieldObject(eFieldObjectType _type, uint64_t _num);
 	virtual ~CFieldObject();
 
-	eFieldObjectType GetObjectType();
-	uint64_t GetNum();
-	bool IsActive();
-	VECTOR3& GetPosition();
-	float GetRotationY();
-	CField* GetField();
-	CSector* GetSector();
+	eFieldObjectType	GetObjectType();
+	uint64_t			GetNum();
+	bool				IsActive();
 
-	virtual void WriteInfo(CMemoryStream& _stream);
+	VECTOR3&			GetPosition();
+	float				GetRotationY();
+
+	CField*				GetField();
+	CSector*			GetSector();
+
+	virtual void		WriteInfo(CMemoryStream& _stream);
 };

@@ -26,6 +26,7 @@ void CSectorGrid::Initialize(uint64_t _sectorWidth, uint64_t _rows, uint64_t _co
 	}
 }
 
+
 CSector* CSectorGrid::GetSector(const VECTOR3& _position)
 {
 	if (m_sectorWidth == 0) return nullptr;
@@ -47,6 +48,7 @@ std::vector<CSector>& CSectorGrid::GetSectorList()
 	return m_sectorList;
 }
 
+
 uint64_t CSectorGrid::GetSectorWidth()
 {
 	return m_sectorWidth;
@@ -61,6 +63,7 @@ uint64_t CSectorGrid::GetCols()
 {
 	return m_cols;
 }
+
 
 std::vector<CSector*> CSectorGrid::CreateAdjoiningSectorList(uint64_t _index)
 {

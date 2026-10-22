@@ -18,14 +18,17 @@ class CZoneServerService : public CServerService
 private:
 	CTCPAcceptor					m_acceptor;
 	std::unique_ptr<CTCPConnection>	m_proxyConnection;
+
 	CDBConnectionPool				m_dbConnectionPool;
 	CZoneData						m_zoneData;
 	CCharacterDB					m_characterDB;
 	CMonsterDBLoader				m_monsterDBLoader;
 	CMonsterSpawnData				m_monsterSpawnData;
 	CPlayerStatDB					m_playerStatDB;
+
 	CChannelManager					m_channelManager;
 	CSessionManager					m_sessionManager;
+
 	CJobPool						m_packetTaskPool;
 
 public:
@@ -33,10 +36,10 @@ public:
 	~CZoneServerService() override = default;
 
 protected:
-	bool OnInit() override;
-	bool OnRun() override;
-	void OnStop() override;
+	bool	OnInit() override;
+	bool	OnRun() override;
+	void	OnStop() override;
 
 private:
-	void SendMonsterState(CChannel* _channel, CMonster* _monster);
+	void	SendMonsterState(CChannel* _channel, CMonster* _monster);
 };

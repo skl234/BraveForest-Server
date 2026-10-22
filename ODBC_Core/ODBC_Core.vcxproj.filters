@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="DBStatement.cpp" />
@@ -13,5 +13,9 @@
     <ClInclude Include="DBConnection.h" />
     <ClInclude Include="DBEnvironment.h" />
     <ClInclude Include="DBConnectionPool.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DBText.cpp"><Filter>소스 파일</Filter></ClCompile>
+    <ClInclude Include="DBText.h"><Filter>헤더 파일</Filter></ClInclude>
   </ItemGroup>
 </Project>

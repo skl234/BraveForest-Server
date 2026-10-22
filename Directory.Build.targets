@@ -4,8 +4,12 @@
     <LocalDatabaseConfig>$(MSBuildThisFileDirectory)Config\Database.local.ini</LocalDatabaseConfig>
   </PropertyGroup>
   <Target Name="CopyLocalDatabaseConfig" AfterTargets="Build"
-          Condition="('$(MSBuildProjectName)'=='LoginServer' Or '$(MSBuildProjectName)'=='ZoneServer') And Exists('$(LocalDatabaseConfig)')">
+          Condition="('$(MSBuildProjectName)'=='LoginServer' Or '$(MSBuildProjectName)'=='ZoneServer' Or '$(MSBuildProjectName)'=='WorldServer') And Exists('$(LocalDatabaseConfig)')">
     <MakeDir Directories="$(TargetDir)Config" />
     <Copy SourceFiles="$(LocalDatabaseConfig)" DestinationFolder="$(TargetDir)Config" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyWorldZoneData" AfterTargets="Build" Condition="'$(MSBuildProjectName)'=='WorldServer'">
+    <MakeDir Directories="$(TargetDir)Data" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)Data\ZoneInfo.txt" DestinationFolder="$(TargetDir)Data" SkipUnchangedFiles="true" />
   </Target>
 </Project>

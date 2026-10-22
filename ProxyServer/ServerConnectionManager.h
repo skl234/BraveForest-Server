@@ -11,6 +11,7 @@ class CServerConnectionManager
 {
 private:
 	std::unique_ptr<CTCPConnection>				m_loginServerConnection;
+	std::unique_ptr<CTCPConnection>				m_worldServerConnection;
 	std::vector<std::unique_ptr<CTCPConnection>>	m_zoneServerConnectionList;
 
 public:
@@ -21,6 +22,7 @@ public:
 	void DisconnectAll();
 
 	CTCPConnection* GetLoginConnection();
+	CTCPConnection* GetWorldConnection();
 	CTCPConnection* GetZoneConnection(uint64_t _zoneId);
 	std::vector<std::unique_ptr<CTCPConnection>>& GetZoneConnectionList();
 };

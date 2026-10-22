@@ -40,6 +40,7 @@ public:
 
 private:
 	void ExecuteC2S();
+	void OnDisconnected();
 	void ExecuteS2C();
 	void Cleanup();
 };

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="소스 파일">
@@ -102,6 +102,9 @@
     <ClCompile Include="MonsterManager.cpp">
       <Filter>FieldObject\Monster</Filter>
     </ClCompile>
+    <ClCompile Include="MonsterSpawnData.cpp">
+      <Filter>FieldObject\Monster</Filter>
+    </ClCompile>
     <ClCompile Include="MonsterScheduler.cpp">
       <Filter>FieldObject\Monster</Filter>
     </ClCompile>
@@ -125,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="ZoneServerService.cpp">
       <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="ZonePacketCreator.cpp">
+      <Filter>PacketTask</Filter>
     </ClCompile>
     <ClCompile Include="PacketTask.cpp">
       <Filter>PacketTask</Filter>
@@ -227,6 +233,9 @@
     <ClInclude Include="ZoneServerService.h">
       <Filter>Service</Filter>
     </ClInclude>
+    <ClInclude Include="ZonePacketCreator.h">
+      <Filter>PacketTask</Filter>
+    </ClInclude>
     <ClInclude Include="PacketTask.h">
       <Filter>PacketTask</Filter>
     </ClInclude>
@@ -236,8 +245,12 @@
     <ClInclude Include="QUATERNION.h">
       <Filter>Transform</Filter>
     </ClInclude>
+    <ClInclude Include="TRANSFORM.h">
+      <Filter>Transform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ZoneServerConfig.cpp" />
   </ItemGroup>
+  <ItemGroup><ClCompile Include="WorldPacket.cpp"><Filter>PacketTask</Filter></ClCompile></ItemGroup>
 </Project>

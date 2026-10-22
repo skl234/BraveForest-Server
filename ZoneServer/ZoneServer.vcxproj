@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -152,6 +152,7 @@
     <ClCompile Include="MonsterManager.cpp" />
 	<ClCompile Include="MonsterDBLoader.cpp" />
     <ClCompile Include="MonsterScheduler.cpp" />
+    <ClCompile Include="MonsterSpawnData.cpp" />
     <ClCompile Include="Navigation.cpp" />
     <ClCompile Include="Navigator.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -159,6 +160,7 @@
 	<ClCompile Include="PacketTask.cpp">
 	  <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
 	</ClCompile>
+	<ClCompile Include="ZonePacketCreator.cpp" />
 	<ClCompile Include="CharacterDB.cpp" />
 	<ClCompile Include="PlayerStatDB.cpp" />
 	<ClCompile Include="ZoneServerService.cpp" />
@@ -191,6 +193,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />
 	<ClInclude Include="PacketTask.h" />
+    <ClInclude Include="ZonePacketCreator.h" />
 	<ClInclude Include="CharacterDB.h" />
 	<ClInclude Include="PlayerStatDB.h" />
 	<ClInclude Include="../Common/ZoneData.h" />
@@ -204,6 +207,7 @@
     <ClInclude Include="SessionManager.h" />
     <ClInclude Include="VECTOR3.h" />
     <ClInclude Include="QUATERNION.h" />
+    <ClInclude Include="TRANSFORM.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Utility_Core\Utility_Core.vcxproj">
@@ -219,6 +223,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>
     <ClCompile Include="ZoneServerConfig.cpp" />
+    <ClCompile Include="WorldPacket.cpp" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\Build\MMOServerExes.targets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />

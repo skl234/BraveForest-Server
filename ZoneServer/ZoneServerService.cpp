@@ -90,13 +90,18 @@ bool CZoneServerService::OnInit()
 				CPacketTask* task = static_cast<CPacketTask*>(m_packetTaskPool.Acquire());
 				if (task == nullptr) continue;
 				CChannel* channel = nullptr;
-				if (header.packetHeader.type == ePacketType::C2S_EnterZone)
-					channel = m_channelManager.SelectEnterChannel();
+				if (header.packetHeader.type == ePacketType::C2S_EnterZone || header.packetHeader.type == ePacketType::S2S_ReserveZone)
+					{
+						CSession* existing = m_sessionManager.Find(header.proxyHeader.sessionId);
+						if (existing != nullptr) channel = m_channelManager.FindChannel(existing->GetChannelId());
+						else channel = m_channelManager.SelectEnterChannel();
+					}
 				else
 				{
 					CSession* session = m_sessionManager.Find(header.proxyHeader.sessionId);
 					if (session != nullptr) channel = m_channelManager.FindChannel(session->GetChannelId());
 				}
+				if (channel == nullptr) channel = m_channelManager.FindChannel(1);
 				task->Initialize(std::move(packet), m_proxyConnection.get(), m_proxyConnection->GetGeneration(), channel);
 				if (channel == nullptr)
 				{
@@ -166,6 +171,7 @@ void CZoneServerService::OnStop()
 		m_sessionManager.Deactivate(sessionId);
 	}
 }
+
 
 void CZoneServerService::SendMonsterState(CChannel* _channel, CMonster* _monster)
 {

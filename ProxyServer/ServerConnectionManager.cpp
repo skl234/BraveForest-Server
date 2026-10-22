@@ -31,6 +31,7 @@ bool CServerConnectionManager::Initialize(CIOCP* _iocp, COverlappedManager* _ove
 		{
 			m_loginServerConnection = std::move(connection);
 		}
+		if (_infoList[i].type == eBackServerType::World) m_worldServerConnection = std::move(connection);
 		if (_infoList[i].type == eBackServerType::Zone)
 		{
 			uint64_t zoneId = _infoList[i].serverId;
@@ -46,6 +47,7 @@ bool CServerConnectionManager::Initialize(CIOCP* _iocp, COverlappedManager* _ove
 	if (!result)
 	{
 		m_loginServerConnection.reset();
+		m_worldServerConnection.reset();
 		m_zoneServerConnectionList.clear();
 	}
 
@@ -55,6 +57,7 @@ bool CServerConnectionManager::Initialize(CIOCP* _iocp, COverlappedManager* _ove
 void CServerConnectionManager::DisconnectAll()
 {
 	if (m_loginServerConnection != nullptr) m_loginServerConnection->Disconnect();
+	if (m_worldServerConnection != nullptr) m_worldServerConnection->Disconnect();
 	uint64_t size = static_cast<uint64_t>(m_zoneServerConnectionList.size());
 	for (uint64_t i = 1; i < size; ++i)
 	{
@@ -65,6 +68,11 @@ void CServerConnectionManager::DisconnectAll()
 CTCPConnection* CServerConnectionManager::GetLoginConnection()
 {
 	return m_loginServerConnection.get();
+}
+
+CTCPConnection* CServerConnectionManager::GetWorldConnection()
+{
+	return m_worldServerConnection.get();
 }
 
 CTCPConnection* CServerConnectionManager::GetZoneConnection(uint64_t _zoneId)

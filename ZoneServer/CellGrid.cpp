@@ -50,19 +50,14 @@ void CCellGrid::Initialize(uint64_t _rows, uint64_t _cols, const std::set<uint64
 	}
 }
 
-void CCellGrid::ShowMap()
-{
-	uint64_t size = static_cast<uint64_t>(m_cellList.size());
-	for (uint64_t i = 0; i < size; ++i)
-	{
-		if (i != 0 && i % m_cols == 0) std::cout << std::endl;
 
-		if (m_cellList[i].IsBlock())
-			std::cout << std::setw(4) << "/";
-		else
-			std::cout << std::setw(4) << m_cellList[i].GetIndex();
-	}
-	std::cout << std::endl;
+CCell* CCellGrid::GetCell(const VECTOR3& _position)
+{
+	if (_position.x < 0.0f || _position.z < 0.0f) return nullptr;
+	uint64_t row = static_cast<uint64_t>(_position.x);
+	uint64_t col = static_cast<uint64_t>(_position.z);
+	if (row >= m_rows || col >= m_cols) return nullptr;
+	return &m_cellList[row * m_cols + col];
 }
 
 std::vector<CCell>& CCellGrid::GetCellList()
@@ -80,14 +75,22 @@ uint64_t CCellGrid::GetCols()
 	return m_cols;
 }
 
-CCell* CCellGrid::GetCell(const VECTOR3& _position)
+
+void CCellGrid::ShowMap()
 {
-	if (_position.x < 0.0f || _position.z < 0.0f) return nullptr;
-	uint64_t row = static_cast<uint64_t>(_position.x);
-	uint64_t col = static_cast<uint64_t>(_position.z);
-	if (row >= m_rows || col >= m_cols) return nullptr;
-	return &m_cellList[row * m_cols + col];
+	uint64_t size = static_cast<uint64_t>(m_cellList.size());
+	for (uint64_t i = 0; i < size; ++i)
+	{
+		if (i != 0 && i % m_cols == 0) std::cout << std::endl;
+
+		if (m_cellList[i].IsBlock())
+			std::cout << std::setw(4) << "/";
+		else
+			std::cout << std::setw(4) << m_cellList[i].GetIndex();
+	}
+	std::cout << std::endl;
 }
+
 
 std::vector<CCell*> CCellGrid::GetAdjoingCellList(uint64_t _index)
 {

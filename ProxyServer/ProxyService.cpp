@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Monitor.h"
 #include "../Common/PACKET.h"
+#include <cstddef>
 #include "../Utility_Core/LogManager.h"
 
 bool CProxyService::OnInit()
@@ -24,6 +25,8 @@ bool CProxyService::OnInit()
 	}
 	CTCPConnection* loginConnection = m_serverConnectionManager.GetLoginConnection();
 	if (loginConnection == nullptr) return false;
+	CTCPConnection* worldConnection = m_serverConnectionManager.GetWorldConnection();
+	if (worldConnection == nullptr) return false;
 	if (m_serverConnectionManager.GetZoneConnectionList().size() <= 1) return false;
 	// ------------------------------------------------------------------------------------------------------------------------------------
 
@@ -71,35 +74,12 @@ bool CProxyService::OnInit()
 	for (uint64_t i = 0; i < connSize; ++i)
 	{
 		CClientConnection* connection = connList[i].get();
-		connection->SetDisconnectHandler([connection, loginConnection, this]()
+		connection->SetDisconnectHandler([connection, this]()
 			{
-				uint64_t accountIndex = connection->GetAccountIndex();
-				if (accountIndex == 0)
-				{
-					m_clientConnectionManager.Release(connection);
-					return;
-				}
-
-				if (!connection->TryStartLogout()) return;
-
-				PACKET_C2S_LEAVE_ZONE leaveZonePacket;
-				auto leavePacket = MakeShared(leaveZonePacket);
-				auto zoneRelayPacket = std::make_shared<std::vector<byte>>(
-					AttachProxyHeader(*leavePacket, { connection->GetSessionId(), accountIndex }));
-				CTCPConnection* zoneConnection = m_serverConnectionManager.GetZoneConnection(connection->GetZoneId());
-				if (zoneConnection != nullptr) zoneConnection->PostSend(zoneRelayPacket);
-
-				PACKET_C2S_LOGOUT logoutPacket;
-				auto packet = MakeShared(logoutPacket);
-				auto relayPacket = std::make_shared<std::vector<byte>>(
-					AttachProxyHeader(*packet, { connection->GetSessionId(), accountIndex }));
-
-				if (!loginConnection->PostSend(relayPacket))
-				{
-					connection->SetLogoutPending(false);
-					connection->SetAccountIndex(0);
-					m_clientConnectionManager.Release(connection);
-				}
+				CPacketTask* task = static_cast<CPacketTask*>(m_packetTaskPool.Acquire());
+				if (task == nullptr) return;
+				task->Initialize({}, connection, connection->GetGeneration(), eOwnerType::Client);
+				m_executorManager.Add(task, connection->GetSessionId());
 			});
 		connection->SetRecvHandler([connection, this]()
 			{
@@ -137,75 +117,13 @@ bool CProxyService::OnInit()
 
 	// ------------------------------------------------------------------------------------------------------------------------------------
 	// 7. ServerConnection Handler Init
-	loginConnection->SetDisconnectHandler([]()
-		{
-			//추후 로그인 서버 재연결 처리가 필요하다.
-		});
-	loginConnection->SetRecvHandler([this, loginConnection]()
-		{
-			CRingBuffer& recvBuffer = loginConnection->GetRecvBuffer();
-			while (true)
-			{
-				PROXY_PACKET_HEADER header{};
-				if (!recvBuffer.Peek(header)) break;
-
-				uint64_t totalSize = sizeof(PROXY_HEADER) + header.packetHeader.size;
-				if (recvBuffer.GetReadableSize() < totalSize) break;
-
-				std::vector<byte> packet;
-				if (!recvBuffer.Read(packet, totalSize))
-				{
-					loginConnection->Disconnect();
-					break;
-				}
-
-				CPacketTask* task = static_cast<CPacketTask*>(m_packetTaskPool.Acquire());
-
-				if (task == nullptr)
-				{
-					loginConnection->Disconnect();
-					return;
-				}
-
-				uint64_t sessionId = header.proxyHeader.sessionId;
-				task->Initialize(std::move(packet), loginConnection, loginConnection->GetGeneration(), eOwnerType::Server);
-				m_executorManager.Add(task, sessionId);
-			}
-		});
-
-	loginConnection->SetErrorHandler([](DWORD error)
-		{
-			//로그 기록 후 재연결을 요청해야 한다.
-		});
-
-	std::vector<std::unique_ptr<CTCPConnection>>& zoneConnectionList = m_serverConnectionManager.GetZoneConnectionList();
-	uint64_t zoneConnectionSize = static_cast<uint64_t>(zoneConnectionList.size());
-	for (uint64_t i = 1; i < zoneConnectionSize; ++i)
+	InitializeServerHandler(loginConnection);
+	InitializeServerHandler(worldConnection);
+	std::vector<std::unique_ptr<CTCPConnection>>& zoneList = m_serverConnectionManager.GetZoneConnectionList();
+	for (uint64_t i = 1; i < zoneList.size(); ++i)
 	{
-		if (zoneConnectionList[i] == nullptr) continue;
-		CTCPConnection* zoneConnection = zoneConnectionList[i].get();
-		zoneConnection->SetDisconnectHandler([]() {});
-		zoneConnection->SetRecvHandler([this, zoneConnection]()
-			{
-				CRingBuffer& recvBuffer = zoneConnection->GetRecvBuffer();
-				while (true)
-				{
-					PROXY_PACKET_HEADER header{};
-					if (!recvBuffer.Peek(header)) break;
-					uint64_t totalSize = sizeof(PROXY_HEADER) + header.packetHeader.size;
-					if (recvBuffer.GetReadableSize() < totalSize) break;
-					std::vector<byte> packet;
-					if (!recvBuffer.Read(packet, totalSize)) { zoneConnection->Disconnect(); break; }
-					CPacketTask* task = static_cast<CPacketTask*>(m_packetTaskPool.Acquire());
-					if (task == nullptr) { zoneConnection->Disconnect(); return; }
-					task->Initialize(std::move(packet), zoneConnection, zoneConnection->GetGeneration(), eOwnerType::Server);
-					m_executorManager.Add(task, header.proxyHeader.sessionId);
-				}
-			});
-		zoneConnection->SetErrorHandler([](DWORD _error) { (void)_error; });
+		if (zoneList[i] != nullptr) InitializeServerHandler(zoneList[i].get());
 	}
-
-	// ------------------------------------------------------------------------------------------------------------------------------------
 
 	CMonitor::GetInstance().Initialize(&m_clientConnectionManager, &m_serverConnectionManager, &m_server, &m_executorManager, &m_packetTaskPool);
 	return true;
@@ -240,6 +158,70 @@ void CProxyService::OnStop()
 	{
 		connectionList[i]->Disconnect();
 	}
+	uint64_t until = GetTickCount64() + 30000;
+	while (m_clientConnectionManager.GetAcquireSize() != 0 && GetTickCount64() < until) Sleep(10);
+	if (m_clientConnectionManager.GetAcquireSize() != 0) std::cerr << "Proxy: disconnect cleanup timed out\n";
 	m_serverConnectionManager.DisconnectAll();
 	m_executorManager.Stop();
+}
+
+void CProxyService::InitializeServerHandler(CTCPConnection* _connection)
+{
+	_connection->SetDisconnectHandler([]() {});
+	_connection->SetErrorHandler([](DWORD _error) { (void)_error; });
+	_connection->SetRecvHandler([this, _connection]()
+		{
+			CRingBuffer& recvBuffer = _connection->GetRecvBuffer();
+			while (true)
+			{
+				PROXY_PACKET_HEADER header{};
+				if (!recvBuffer.Peek(header)) break;
+				if (header.packetHeader.size < sizeof(PACKET_HEADER))
+				{
+					_connection->Disconnect();
+					return;
+				}
+				uint64_t totalSize = sizeof(PROXY_HEADER) + header.packetHeader.size;
+				if (recvBuffer.GetReadableSize() < totalSize) break;
+				std::vector<byte> packet;
+				if (!recvBuffer.Read(packet, totalSize))
+				{
+					_connection->Disconnect();
+					return;
+				}
+				if (_connection == m_serverConnectionManager.GetWorldConnection() && header.packetHeader.type == ePacketType::S2S_SendClientList)
+				{
+					uint64_t prefix = offsetof(PACKET_S2S_SEND_CLIENT_LIST, clientList);
+					if (packet.size() < prefix) continue;
+					PACKET_S2S_SEND_CLIENT_LIST* list = reinterpret_cast<PACKET_S2S_SEND_CLIENT_LIST*>(packet.data());
+					uint64_t dataOffset = prefix + sizeof(PROXY_HEADER) * list->clientCount;
+					if (packet.size() < dataOffset + sizeof(PACKET_HEADER)) continue;
+					PACKET_HEADER* payload = reinterpret_cast<PACKET_HEADER*>(packet.data() + dataOffset);
+					if (payload->size < sizeof(PACKET_HEADER) || dataOffset + payload->size != packet.size()) continue;
+					// 같은 수신자 큐에 순서대로 넣고 나서 다음 World 패킷을 읽음.
+					for (uint64_t i = 0; i < list->clientCount; ++i)
+					{
+						std::vector<byte> message(sizeof(PROXY_HEADER) + payload->size);
+						memcpy(message.data(), &list->clientList[i], sizeof(PROXY_HEADER));
+						memcpy(message.data() + sizeof(PROXY_HEADER), payload, payload->size);
+						QueueServerPacket(_connection, std::move(message));
+					}
+				}
+				else QueueServerPacket(_connection, std::move(packet));
+			}
+		});
+}
+
+void CProxyService::QueueServerPacket(CTCPConnection* _connection, std::vector<byte>&& _packet)
+{
+	PROXY_HEADER* header = reinterpret_cast<PROXY_HEADER*>(_packet.data());
+	uint64_t sessionId = header->sessionId;
+	CPacketTask* task = static_cast<CPacketTask*>(m_packetTaskPool.Acquire());
+	if (task == nullptr)
+	{
+		_connection->Disconnect();
+		return;
+	}
+	task->Initialize(std::move(_packet), _connection, _connection->GetGeneration(), eOwnerType::Server);
+	m_executorManager.Add(task, sessionId);
 }

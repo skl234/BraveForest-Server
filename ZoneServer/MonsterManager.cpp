@@ -16,6 +16,7 @@ bool CMonsterManager::Initialize(const std::vector<MONSTER_SPAWN_INFO>& _spawnIn
 	return true;
 }
 
+
 CMonster* CMonsterManager::Find(uint64_t _objectNum)
 {
 	if (_objectNum >= m_list.size()) return nullptr;

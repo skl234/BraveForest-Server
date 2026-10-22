@@ -17,11 +17,12 @@ public:
 	CPlayerManager() = default;
 	~CPlayerManager() = default;
 
-	void Initialize(uint64_t _size, const CPlayerStatDB* _playerStatDB = nullptr);
-	CPlayer* Acquire();
-	void Release(CPlayer* _player);
-	CPlayer* Find(uint64_t _objectNum);
+	void		Initialize(uint64_t _size, const CPlayerStatDB* _playerStatDB = nullptr);
 
-	uint64_t GetAcquireSize();
-	uint64_t GetSize();
+	CPlayer*	Acquire();
+	void		Release(CPlayer* _player);
+
+	CPlayer*	Find(uint64_t _objectNum);
+	uint64_t	GetAcquireSize();
+	uint64_t	GetSize();
 };

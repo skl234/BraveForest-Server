@@ -27,4 +27,8 @@ protected:
 	bool OnInit() override;
 	bool OnRun() override;
 	void OnStop() override;
+
+private:
+	void InitializeServerHandler(CTCPConnection* _connection);
+	void QueueServerPacket(CTCPConnection* _connection, std::vector<byte>&& _packet);
 };

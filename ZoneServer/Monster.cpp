@@ -56,7 +56,7 @@ CMonster::CMonster(uint64_t _objectNum, const MONSTER_SPAWN_INFO& _spawnInfo) :
 	m_spawnPosition.y = 0.0f;
 	m_position = m_spawnPosition;
 	m_rotationY = _spawnInfo.rotationY;
-	m_nextWanderTime = GetTickCount64() + GetRandomTime(m_idleMinTimeMs, m_idleMaxTimeMs, 0);
+	m_nextWanderTime = GetTickCount64() + GetRandomTime(m_idleMinTimeMs, m_idleMaxTimeMs);
 }
 
 void CMonster::Update(uint64_t _currentTime, uint64_t _deltaTimeMs, CPlayerManager* _playerManager)
@@ -99,6 +99,7 @@ void CMonster::Update(uint64_t _currentTime, uint64_t _deltaTimeMs, CPlayerManag
 	if (m_state == eMonsterState::Attack) UpdateAttack(_currentTime, target);
 }
 
+
 uint64_t CMonster::TakeDamage(uint64_t _damage)
 {
 	return TakeDamage(nullptr, _damage, GetTickCount64());
@@ -136,37 +137,129 @@ void CMonster::ReleaseTarget(uint64_t _playerObjectNum)
 	if (m_state == eMonsterState::Chase || m_state == eMonsterState::Attack) StartReturn();
 }
 
-CPlayer* CMonster::FindNearbyPlayer()
+uint64_t CMonster::ConsumeAttackDamage()
 {
-	if (m_sector == nullptr) return nullptr;
-	std::vector<CSector*> sectorList;
-	sectorList.push_back(m_sector);
-	std::vector<CSector*>& adjoining = m_sector->GetAdjoiningSectorList();
-	uint64_t adjoiningSize = static_cast<uint64_t>(adjoining.size());
-	for (uint64_t i = 0; i < adjoiningSize; ++i)
-	{
-		if (adjoining[i] != nullptr) sectorList.push_back(adjoining[i]);
-	}
-	CPlayer* result = nullptr;
-	float resultDistance = m_detectionRange;
-	uint64_t sectorSize = static_cast<uint64_t>(sectorList.size());
-	for (uint64_t i = 0; i < sectorSize; ++i)
-	{
-		std::set<CFieldObject*>& objectList = sectorList[i]->GetObjectList();
-		for (std::set<CFieldObject*>::iterator iter = objectList.begin(); iter != objectList.end(); ++iter)
-		{
-			CFieldObject* object = *iter;
-			if (object->GetObjectType() != eFieldObjectType::Player || !object->IsActive()) continue;
-			CPlayer* player = static_cast<CPlayer*>(object);
-			if (player->GetState() == ePlayerState::Die) continue;
-			float distance = VECTOR3::Distance(m_position, player->GetPosition());
-			if (distance > resultDistance) continue;
-			result = player;
-			resultDistance = distance;
-		}
-	}
-	return result;
+	uint64_t damage = m_lastAttackDamage;
+	m_lastAttackDamage = 0;
+	return damage;
 }
+
+bool CMonster::ConsumePathChanged()
+{
+	if (m_sentPathVersion == m_pathVersion) return false;
+	m_sentPathVersion = m_pathVersion;
+	return true;
+}
+
+
+eMonsterType CMonster::GetType()
+{
+	return m_type;
+}
+
+eMonsterState CMonster::GetState()
+{
+	return m_state;
+}
+
+uint64_t CMonster::GetLevel()
+{
+	return m_level;
+}
+
+uint64_t CMonster::GetMaxHP()
+{
+	return m_maxHP;
+}
+
+uint64_t CMonster::GetHP()
+{
+	return m_hp;
+}
+
+uint64_t CMonster::GetExperience()
+{
+	return m_experience;
+}
+
+
+uint64_t CMonster::GetAttackPower()
+{
+	return m_attackPower;
+}
+
+bool CMonster::IsAggressive()
+{
+	return m_aggressive;
+}
+
+bool CMonster::IsInvincible()
+{
+	return m_invincible;
+}
+
+uint64_t CMonster::GetAttackTargetObjectNum()
+{
+	return m_attackTargetObjectNum;
+}
+
+uint64_t CMonster::GetLastAttackDamage()
+{
+	return m_lastAttackDamage;
+}
+
+
+VECTOR3& CMonster::GetSpawnPosition()
+{
+	return m_spawnPosition;
+}
+
+float CMonster::GetWanderRadius()
+{
+	return m_wanderRadius;
+}
+
+float CMonster::GetMaxAggroRange()
+{
+	return m_maxAggroRange;
+}
+
+float CMonster::GetRespawnRadius()
+{
+	return m_respawnRadius;
+}
+
+uint64_t CMonster::GetRespawnDelayMs()
+{
+	return m_respawnDelayMs;
+}
+
+
+VECTOR3& CMonster::GetDestination()
+{
+	return m_destination;
+}
+
+float CMonster::GetMoveSpeed()
+{
+	return m_moveSpeed;
+}
+
+uint64_t CMonster::GetPathIndex()
+{
+	return m_pathIndex;
+}
+
+uint64_t CMonster::GetPathVersion()
+{
+	return m_pathVersion;
+}
+
+std::vector<VECTOR3>& CMonster::GetPath()
+{
+	return m_path;
+}
+
 
 void CMonster::UpdateIdle(uint64_t _currentTime, uint64_t _deltaTimeMs, CPlayer* _target)
 {
@@ -200,13 +293,13 @@ void CMonster::UpdateIdle(uint64_t _currentTime, uint64_t _deltaTimeMs, CPlayer*
 		{
 			ClearPath();
 			m_state = eMonsterState::Idle;
-			m_nextWanderTime = _currentTime + GetRandomTime(m_idleMinTimeMs, m_idleMaxTimeMs, _currentTime);
+			m_nextWanderTime = _currentTime + GetRandomTime(m_idleMinTimeMs, m_idleMaxTimeMs);
 		}
 		return;
 	}
 	if (!m_canWander || _currentTime < m_nextWanderTime || m_wanderRadius <= 0.0f) return;
 	// 스폰 반경 내에서 선택. Block이면 이동x
-	m_nextWanderTime = _currentTime + GetRandomTime(m_idleMinTimeMs, m_idleMaxTimeMs, _currentTime);
+	m_nextWanderTime = _currentTime + GetRandomTime(m_idleMinTimeMs, m_idleMaxTimeMs);
 	float angle = CRandomNumberGenerator::Genarate_float(0.0f, 6.2831853f);
 	float radius = m_wanderRadius * std::sqrt(CRandomNumberGenerator::Genarate_float(0.25f, 1.0f));
 	m_destination.x = m_spawnPosition.x + std::sin(angle) * radius;
@@ -218,7 +311,7 @@ void CMonster::UpdateIdle(uint64_t _currentTime, uint64_t _deltaTimeMs, CPlayer*
 	{
 		return;
 	}
-	m_wanderEndTime = _currentTime + GetRandomTime(m_wanderMinTimeMs, m_wanderMaxTimeMs, _currentTime);
+	m_wanderEndTime = _currentTime + GetRandomTime(m_wanderMinTimeMs, m_wanderMaxTimeMs);
 	m_state = eMonsterState::Move;
 }
 
@@ -341,6 +434,58 @@ void CMonster::UpdateDead(uint64_t _currentTime)
 	m_invincible = false;
 	m_state = eMonsterState::Idle;
 }
+
+
+CPlayer* CMonster::FindNearbyPlayer()
+{
+	if (m_sector == nullptr) return nullptr;
+	std::vector<CSector*> sectorList;
+	sectorList.push_back(m_sector);
+	std::vector<CSector*>& adjoining = m_sector->GetAdjoiningSectorList();
+	uint64_t adjoiningSize = static_cast<uint64_t>(adjoining.size());
+	for (uint64_t i = 0; i < adjoiningSize; ++i)
+	{
+		if (adjoining[i] != nullptr) sectorList.push_back(adjoining[i]);
+	}
+	CPlayer* result = nullptr;
+	float resultDistance = m_detectionRange;
+	uint64_t sectorSize = static_cast<uint64_t>(sectorList.size());
+	for (uint64_t i = 0; i < sectorSize; ++i)
+	{
+		std::set<CFieldObject*>& objectList = sectorList[i]->GetObjectList();
+		for (std::set<CFieldObject*>::iterator iter = objectList.begin(); iter != objectList.end(); ++iter)
+		{
+			CFieldObject* object = *iter;
+			if (object->GetObjectType() != eFieldObjectType::Player || !object->IsActive()) continue;
+			CPlayer* player = static_cast<CPlayer*>(object);
+			if (player->GetState() == ePlayerState::Die) continue;
+			float distance = VECTOR3::Distance(m_position, player->GetPosition());
+			if (distance > resultDistance) continue;
+			result = player;
+			resultDistance = distance;
+		}
+	}
+	return result;
+}
+
+void CMonster::StartReturn()
+{
+	m_attackTargetObjectNum = UINT64_MAX;
+	ClearPath();
+	m_invincible = true;
+	m_state = eMonsterState::Return;
+	m_destination = m_spawnPosition;
+}
+
+void CMonster::Die(uint64_t _currentTime)
+{
+	m_attackTargetObjectNum = UINT64_MAX;
+	ClearPath();
+	m_state = eMonsterState::Dead;
+	m_invincible = true;
+	m_respawnTime = _currentTime + m_respawnDelayMs;
+}
+
 
 bool CMonster::CreatePath(const VECTOR3& _destination)
 {
@@ -487,12 +632,6 @@ bool CMonster::MovePath(uint64_t _deltaTimeMs)
 	return m_pathIndex < m_path.size();
 }
 
-uint64_t CMonster::GetRandomTime(uint64_t _minTime, uint64_t _maxTime, uint64_t _currentTime)
-{
-	if (_maxTime <= _minTime) return _minTime;
-	return static_cast<uint64_t>(CRandomNumberGenerator::Genarate_int64(static_cast<int64_t>(_minTime), static_cast<int64_t>(_maxTime)));
-}
-
 void CMonster::ClearPath()
 {
 	if (m_path.empty()) return;
@@ -502,117 +641,9 @@ void CMonster::ClearPath()
 	++m_pathVersion;
 }
 
-void CMonster::StartReturn()
-{
-	m_attackTargetObjectNum = UINT64_MAX;
-	ClearPath();
-	m_invincible = true;
-	m_state = eMonsterState::Return;
-	m_destination = m_spawnPosition;
-}
 
-void CMonster::Die(uint64_t _currentTime)
+uint64_t CMonster::GetRandomTime(uint64_t _minTime, uint64_t _maxTime)
 {
-	m_attackTargetObjectNum = UINT64_MAX;
-	ClearPath();
-	m_state = eMonsterState::Dead;
-	m_invincible = true;
-	m_respawnTime = _currentTime + m_respawnDelayMs;
-}
-eMonsterType CMonster::GetType()
-{
-	return m_type;
-}
-eMonsterState CMonster::GetState()
-{
-	return m_state;
-}
-uint64_t CMonster::GetLevel()
-{
-	return m_level;
-}
-uint64_t CMonster::GetMaxHP()
-{
-	return m_maxHP;
-}
-uint64_t CMonster::GetHP()
-{
-	return m_hp;
-}
-uint64_t CMonster::GetExperience()
-{
-	return m_experience;
-}
-uint64_t CMonster::GetAttackPower()
-{
-	return m_attackPower;
-}
-bool CMonster::IsAggressive()
-{
-	return m_aggressive;
-}
-bool CMonster::IsInvincible()
-{
-	return m_invincible;
-}
-uint64_t CMonster::GetAttackTargetObjectNum()
-{
-	return m_attackTargetObjectNum;
-}
-uint64_t CMonster::GetLastAttackDamage()
-{
-	return m_lastAttackDamage;
-}
-uint64_t CMonster::ConsumeAttackDamage()
-{
-	uint64_t damage = m_lastAttackDamage;
-	m_lastAttackDamage = 0;
-	return damage;
-}
-
-bool CMonster::ConsumePathChanged()
-{
-	if (m_sentPathVersion == m_pathVersion) return false;
-	m_sentPathVersion = m_pathVersion;
-	return true;
-}
-VECTOR3& CMonster::GetSpawnPosition()
-{
-	return m_spawnPosition;
-}
-VECTOR3& CMonster::GetDestination()
-{
-	return m_destination;
-}
-float CMonster::GetWanderRadius()
-{
-	return m_wanderRadius;
-}
-float CMonster::GetMaxAggroRange()
-{
-	return m_maxAggroRange;
-}
-float CMonster::GetRespawnRadius()
-{
-	return m_respawnRadius;
-}
-uint64_t CMonster::GetRespawnDelayMs()
-{
-	return m_respawnDelayMs;
-}
-float CMonster::GetMoveSpeed()
-{
-	return m_moveSpeed;
-}
-uint64_t CMonster::GetPathIndex()
-{
-	return m_pathIndex;
-}
-uint64_t CMonster::GetPathVersion()
-{
-	return m_pathVersion;
-}
-std::vector<VECTOR3>& CMonster::GetPath()
-{
-	return m_path;
+	if (_maxTime <= _minTime) return _minTime;
+	return static_cast<uint64_t>(CRandomNumberGenerator::Genarate_int64(static_cast<int64_t>(_minTime), static_cast<int64_t>(_maxTime)));
 }

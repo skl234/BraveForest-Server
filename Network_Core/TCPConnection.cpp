@@ -224,11 +224,6 @@ bool CTCPConnection::TrySend()
 	if (!m_sendBufferQueue.Pop(packet))
 	{
 		m_sendPending.store(false, std::memory_order_release);
-		/*
-		 * Queue가 비었다고 확인한 직후,
-		 * m_sendPending을 false로 바꾸기 전에
-		 * 다른 Thread가 패킷을 Push했을 수 있다.
-		 */
 		if (!m_sendBufferQueue.IsEmpty())
 		{
 			return TrySend();
@@ -241,11 +236,6 @@ bool CTCPConnection::TrySend()
 	if (overlapped == nullptr)
 	{
 		m_sendPending.store(false, std::memory_order_release);
-		/*
-		 * 이미 Queue에서 packet을 꺼냈으므로
-		 * Overlapped를 구하지 못하면 복구가 어렵다.
-		 * 현재 구조에서는 연결을 끊는 것이 안전하다.
-		 */
 		Disconnect();
 		return false;
 	}

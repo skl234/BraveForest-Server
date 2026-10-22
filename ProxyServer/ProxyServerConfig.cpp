@@ -12,6 +12,7 @@ bool CProxyServerConfig::Load(INI_CONFIG& _config)
 	_config.logicThreadSize = 24;
 
 	_config.backServerInfoList.push_back({ eBackServerType::Login, 0, "192.168.219.100", 30003 });
+	_config.backServerInfoList.push_back({ eBackServerType::World, 0, "192.168.219.100", 30010 });
 	_config.backServerInfoList.push_back({ eBackServerType::Zone, 1, "192.168.219.100", 30004 });
 	_config.backServerInfoList.push_back({ eBackServerType::Zone, 2, "192.168.219.100", 30005 });
 	return true;

@@ -25,6 +25,11 @@ CClientConnection* CClientConnectionManager::Acquire()
 
 	CClientConnection* connection = m_pool.front();
 	m_pool.pop_front();
+	connection->SetAcquired(true);
+	connection->SetZoneId(0);
+	connection->SetAccountIndex(0);
+	connection->SetLogoutPending(false);
+	connection->SetLoginPending(false);
 
 	return connection;
 }
@@ -32,6 +37,7 @@ CClientConnection* CClientConnectionManager::Acquire()
 void CClientConnectionManager::Release(CClientConnection* _connection)
 {
 	CLockGuard lockGuard(m_lock);
+	if (!_connection->SetAcquired(false)) return;
 	m_pool.push_back(_connection);
 }
 

@@ -53,6 +53,12 @@ void CChannel::Stop()
 	m_jobExecutor.Stop();
 }
 
+bool CChannel::IsActive()
+{
+	return m_active.load(std::memory_order_relaxed);
+}
+
+
 void CChannel::PushJob(CJob* _job)
 {
 	if (_job == nullptr) return;
@@ -67,11 +73,6 @@ void CChannel::ScheduleMonster(uint64_t _currentTime)
 	m_jobExecutor.Add(&m_monsterScheduler);
 }
 
-bool CChannel::IsActive()
-{
-	return m_active.load(std::memory_order_relaxed);
-}
-
 void CChannel::SetMonsterUpdateHandler(const std::function<void(CChannel*, CMonster*)>& _handler)
 {
 	m_monsterUpdateHandler = _handler;
@@ -82,6 +83,7 @@ void CChannel::NotifyMonsterUpdated(CMonster* _monster)
 	if (_monster == nullptr || !m_monsterUpdateHandler) return;
 	m_monsterUpdateHandler(this, _monster);
 }
+
 
 CPlayer* CChannel::CreatePlayer(uint64_t _characterIndex, const std::string& _name, eClassState _class, const VECTOR3& _position, uint64_t _level, uint64_t _experience)
 {
@@ -102,35 +104,10 @@ CPlayer* CChannel::CreatePlayer(uint64_t _characterIndex, const std::string& _na
 	return player;
 }
 
-CPlayer* CChannel::CreateReservedPlayer(uint64_t _characterIndex, const std::string& _name, eClassState _class, const VECTOR3& _position, uint64_t _level, uint64_t _experience)
-{
-	uint64_t reservedCount = m_reservedPlayerCount.load(std::memory_order_relaxed);
-	if (reservedCount == 0) return nullptr;
-	m_reservedPlayerCount.fetch_sub(1, std::memory_order_relaxed);
-	return CreatePlayer(_characterIndex, _name, _class, _position, _level, _experience);
-}
-
-bool CChannel::ReservePlayer()
-{
-	while (true)
-	{
-		uint64_t reservedCount = m_reservedPlayerCount.load(std::memory_order_relaxed);
-		if (m_playerCount.load(std::memory_order_relaxed) + reservedCount >= m_maxPlayerCount) return false;
-		if (m_reservedPlayerCount.compare_exchange_weak(reservedCount, reservedCount + 1, std::memory_order_relaxed, std::memory_order_relaxed)) return true;
-	}
-}
-
-void CChannel::CancelPlayerReservation()
-{
-	uint64_t reservedCount = m_reservedPlayerCount.load(std::memory_order_relaxed);
-	if (reservedCount == 0) return;
-	m_reservedPlayerCount.fetch_sub(1, std::memory_order_relaxed);
-}
-
 void CChannel::RemovePlayer(CPlayer* _player)
 {
 	if (_player == nullptr) return;
-	if (_player->GetField() != &m_field) return;
+	if (_player->GetField() != nullptr && _player->GetField() != &m_field) return;
 
 	m_field.Leave(_player);
 	// 풀에 반환하기 전에 타겟 번호 해제
@@ -149,6 +126,60 @@ bool CChannel::MovePlayer(CPlayer* _player, const VECTOR3& _position)
 	if (_player->GetField() != &m_field) return false;
 	return m_field.Move(_player, _position);
 }
+
+
+bool CChannel::ReservePlayer()
+{
+	while (true)
+	{
+		uint64_t reservedCount = m_reservedPlayerCount.load(std::memory_order_relaxed);
+		if (m_playerCount.load(std::memory_order_relaxed) + reservedCount >= m_maxPlayerCount) return false;
+		if (m_reservedPlayerCount.compare_exchange_weak(reservedCount, reservedCount + 1, std::memory_order_relaxed, std::memory_order_relaxed)) return true;
+	}
+}
+
+bool CChannel::ReserveReplacement()
+{
+	m_reservedPlayerCount.fetch_add(1, std::memory_order_relaxed);
+	return true;
+}
+
+void CChannel::CancelPlayerReservation()
+{
+	uint64_t reservedCount = m_reservedPlayerCount.load(std::memory_order_relaxed);
+	if (reservedCount == 0) return;
+	m_reservedPlayerCount.fetch_sub(1, std::memory_order_relaxed);
+}
+
+
+CPlayer* CChannel::CreateReservedPlayer(uint64_t _characterIndex, const std::string& _name, eClassState _class, const VECTOR3& _position, uint64_t _level, uint64_t _experience)
+{
+	uint64_t reservedCount = m_reservedPlayerCount.load(std::memory_order_relaxed);
+	if (reservedCount == 0) return nullptr;
+	CPlayer* player = CreatePlayer(_characterIndex, _name, _class, _position, _level, _experience);
+	m_reservedPlayerCount.fetch_sub(1, std::memory_order_relaxed);
+	return player;
+}
+
+CPlayer* CChannel::StagePlayer(uint64_t _characterIndex, const std::string& _name, eClassState _class, const VECTOR3& _position, uint64_t _level, uint64_t _experience)
+{
+	if (m_reservedPlayerCount.load() == 0 || !m_field.IsWalkable(_position)) return nullptr;
+	CPlayer* player = m_playerManager.Acquire();
+	if (player == nullptr) return nullptr;
+	player->Initialize(_characterIndex, _name, _class, _level, _experience);
+	player->UpdatePosition(_position);
+	player->UpdateDestPosition(_position);
+	m_playerCount.fetch_add(1, std::memory_order_relaxed);
+	m_reservedPlayerCount.fetch_sub(1, std::memory_order_relaxed);
+	return player;
+}
+
+bool CChannel::PublishPlayer(CPlayer* _player)
+{
+	if (_player == nullptr || _player->GetField() != nullptr) return false;
+	return m_field.Enter(_player);
+}
+
 
 uint64_t CChannel::GetChannelId()
 {
@@ -169,6 +200,7 @@ uint64_t CChannel::GetReservedPlayerCount()
 {
 	return m_reservedPlayerCount.load(std::memory_order_relaxed);
 }
+
 
 CField* CChannel::GetField()
 {

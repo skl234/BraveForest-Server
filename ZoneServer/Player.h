@@ -31,53 +31,71 @@ private:
 	std::string						m_name;
 	eClassState						m_class;
 	ePlayerState					m_state;
+
 	uint64_t						m_maxHP;
 	uint64_t						m_hp;
+
 	uint64_t						m_level;
 	uint64_t						m_experience;
+
+	uint64_t						m_partyNum = 0;
+	uint64_t						m_partyZoneId = 0;
+
 	VECTOR3							m_destPosition;
+
 	std::set<CFieldObject*>			m_visibleObjectList;
 	std::vector<FIELD_VIEW_EVENT>	m_viewEventList;
+
 	eAttackType						m_attackType;
 	uint64_t						m_attackTargetObjectNum;
 	uint8_t							m_nextHitIndex;
+
 	const CPlayerStatDB*			m_playerStatDB;
 
 public:
 	CPlayer(uint64_t _objectNum, const CPlayerStatDB* _playerStatDB = nullptr);
 	~CPlayer() override = default;
 
-	void Initialize(uint64_t _characterIndex, const std::string& _name, eClassState _class, uint64_t _level = 1, uint64_t _experience = 0);
-	void Cleanup();
+	void							Initialize(uint64_t _characterIndex, const std::string& _name, eClassState _class, uint64_t _level = 1, uint64_t _experience = 0);
+	void							Cleanup();
 
-	void UpdatePosition(const VECTOR3& _position);
-	void UpdateRotationY(float _rotationY);
-	void UpdateDestPosition(const VECTOR3& _dest);
-	void UpdateState(ePlayerState _state);
-	uint64_t TakeDamage(uint64_t _damage);
-	uint64_t RecoverHalfHP();
-	bool AddExperience(uint64_t _experience);
-	bool StartAttack(eAttackType _attackType, uint64_t _targetObjectNum);
-	void ClearAttack();
+	void							UpdatePosition(const VECTOR3& _position);
+	void							UpdateRotationY(float _rotationY);
+	void							UpdateDestPosition(const VECTOR3& _dest);
+	void							UpdateState(ePlayerState _state);
 
-	void EnterView(CFieldObject* _object);
-	void LeaveView(CFieldObject* _object);
-	bool IsVisible(CFieldObject* _object);
+	uint64_t						TakeDamage(uint64_t _damage);
+	uint64_t						RecoverHalfHP();
+	bool							AddExperience(uint64_t _experience);
 
-	eClassState GetClass();
-	uint64_t GetCharacterIndex();
-	std::string& GetName();
-	ePlayerState GetState();
-	uint64_t GetMaxHP();
-	uint64_t GetHP();
-	uint64_t GetLevel();
-	uint64_t GetExperience();
-	uint64_t GetRequiredExperience();
-	eAttackType GetAttackType();
-	uint64_t GetAttackTargetObjectNum();
-	bool ConsumeRapidHit(uint8_t _hitIndex);
-	VECTOR3& GetDestPosition();
-	std::set<CFieldObject*>& GetVisibleObjectList();
-	std::vector<FIELD_VIEW_EVENT>& GetViewEventList();
-	void ClearViewEventList();
+	bool							StartAttack(eAttackType _attackType, uint64_t _targetObjectNum);
+	void							ClearAttack();
+	bool							ConsumeRapidHit(uint8_t _hitIndex);
+
+	void							UpdateParty(uint64_t _partyNum, uint64_t _zoneId);
+	uint64_t						GetPartyNum();
+	uint64_t						GetPartyZoneId();
+
+	void							EnterView(CFieldObject* _object);
+	void							LeaveView(CFieldObject* _object);
+	bool							IsVisible(CFieldObject* _object);
+	void							ClearViewEventList();
+
+	uint64_t						GetCharacterIndex();
+	std::string&					GetName();
+	eClassState						GetClass();
+	ePlayerState					GetState();
+
+	uint64_t						GetMaxHP();
+	uint64_t						GetHP();
+	uint64_t						GetLevel();
+	uint64_t						GetExperience();
+	uint64_t						GetRequiredExperience();
+
+	eAttackType						GetAttackType();
+	uint64_t						GetAttackTargetObjectNum();
+
+	VECTOR3&						GetDestPosition();
+	std::set<CFieldObject*>&		GetVisibleObjectList();
+	std::vector<FIELD_VIEW_EVENT>&	GetViewEventList();
 };

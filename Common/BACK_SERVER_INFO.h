@@ -8,6 +8,7 @@ enum class eBackServerType : uint16_t
 	None = 0,
 	Login,
 	Zone,
+	World,
 
 	End,
 };

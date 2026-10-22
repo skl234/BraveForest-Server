@@ -24,6 +24,7 @@ bool CMonsterScheduler::Initialize(CChannel* _channel, CMonsterManager* _monster
 	return true;
 }
 
+
 bool CMonsterScheduler::TrySchedule(uint64_t _currentTime)
 {
 	if (m_channel == nullptr || m_monsterManager == nullptr) return false;

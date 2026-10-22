@@ -8,6 +8,7 @@ bool CCharacterDB::Initialize(CDBConnectionPool* _connectionPool)
 	return true;
 }
 
+
 bool CCharacterDB::Load(uint64_t _accountIndex, uint64_t _characterIndex, PLAYER_DATA& _playerData, std::string& _name)
 {
 	_playerData = {};

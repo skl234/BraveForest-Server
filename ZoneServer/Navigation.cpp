@@ -169,6 +169,7 @@ std::vector<VECTOR3> CNavigation::Navigate(CCellGrid& _cellGrid, CCell* _start, 
 	return path;
 }
 
+
 void CNavigation::Clear(std::vector<CCell>& _cellList)
 {
 	m_openList = std::priority_queue<PATH_NODE, std::vector<PATH_NODE>, std::greater<PATH_NODE>>();

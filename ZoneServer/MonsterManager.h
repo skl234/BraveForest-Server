@@ -15,9 +15,9 @@ public:
 	CMonsterManager() = default;
 	~CMonsterManager() = default;
 
-	bool Initialize(const std::vector<MONSTER_SPAWN_INFO>& _spawnInfoList);
-	CMonster* Find(uint64_t _objectNum);
+	bool									Initialize(const std::vector<MONSTER_SPAWN_INFO>& _spawnInfoList);
 
-	std::vector<std::unique_ptr<CMonster>>& GetList();
-	uint64_t GetSize();
+	CMonster*								Find(uint64_t _objectNum);
+	std::vector<std::unique_ptr<CMonster>>&	GetList();
+	uint64_t								GetSize();
 };

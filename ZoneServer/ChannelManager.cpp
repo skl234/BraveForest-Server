@@ -46,6 +46,7 @@ void CChannelManager::Stop()
 	}
 }
 
+
 void CChannelManager::ScheduleMonster(uint64_t _currentTime)
 {
 	uint64_t size = static_cast<uint64_t>(m_channelList.size());
@@ -54,6 +55,7 @@ void CChannelManager::ScheduleMonster(uint64_t _currentTime)
 		m_channelList[i]->ScheduleMonster(_currentTime);
 	}
 }
+
 
 CChannel* CChannelManager::FindChannel(uint64_t _channelId)
 {

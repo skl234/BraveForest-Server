@@ -15,12 +15,13 @@ public:
 	CChannelManager() = default;
 	~CChannelManager() = default;
 
-	bool Initialize(uint64_t _channelCount, uint64_t _playerPoolSize, const std::string& _fieldInfoPath, const std::vector<MONSTER_SPAWN_INFO>* _spawnInfoList = nullptr, const CPlayerStatDB* _playerStatDB = nullptr);
-	bool Start();
-	void Stop();
-	void ScheduleMonster(uint64_t _currentTime);
+	bool		Initialize(uint64_t _channelCount, uint64_t _playerPoolSize, const std::string& _fieldInfoPath, const std::vector<MONSTER_SPAWN_INFO>* _spawnInfoList = nullptr, const CPlayerStatDB* _playerStatDB = nullptr);
+	bool		Start();
+	void		Stop();
 
-	CChannel* FindChannel(uint64_t _channelId);
-	CChannel* SelectEnterChannel();
-	uint64_t GetChannelCount();
+	void		ScheduleMonster(uint64_t _currentTime);
+
+	CChannel*	FindChannel(uint64_t _channelId);
+	CChannel*	SelectEnterChannel();
+	uint64_t	GetChannelCount();
 };

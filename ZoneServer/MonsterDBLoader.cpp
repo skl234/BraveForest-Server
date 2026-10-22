@@ -9,6 +9,7 @@ bool CMonsterDBLoader::Initialize(CDBConnectionPool* _connectionPool)
 	return true;
 }
 
+
 bool CMonsterDBLoader::Load(std::vector<MONSTER_SPAWN_INFO>& _typeList)
 {
 	_typeList.clear();

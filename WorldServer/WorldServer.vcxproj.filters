@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Party"><UniqueIdentifier>{6E18EF58-432D-42D2-8457-9219EC86851E}</UniqueIdentifier></Filter>
+    <Filter Include="PartyManager"><UniqueIdentifier>{CE2DFDF1-F11E-4D08-BF5B-75468C0B425D}</UniqueIdentifier></Filter>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Service">
+      <UniqueIdentifier>{9f188528-fefc-4b32-ae48-9817b522ace5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Session">
+      <UniqueIdentifier>{d4f8805b-cf44-4e95-a7ce-58eb05a399fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SessionManager">
+      <UniqueIdentifier>{afc7ba8b-e63c-4eec-b98f-ea89bf509d1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Task">
+      <UniqueIdentifier>{6d89fbbd-a1a7-4ab0-b65d-00083c359b7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{ccfbe81d-745a-4388-897c-02f97751b476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ChatManager">
+      <UniqueIdentifier>{a311bcbf-bd87-4e51-a53f-d4af35271e92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WorldPacketCreator">
+      <UniqueIdentifier>{1ef86926-b310-44f1-8953-9a4a8c3978b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SessionController">
+      <UniqueIdentifier>{d768ac0b-bfe8-4564-9a35-9375b9133d61}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Player.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Party.cpp"><Filter>Party</Filter></ClCompile>
+    <ClCompile Include="PartyManager.cpp"><Filter>PartyManager</Filter></ClCompile>
+    <ClCompile Include="ChatManager.cpp">
+      <Filter>ChatManager</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldPacketCreator.cpp">
+      <Filter>WorldPacketCreator</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionController.cpp">
+      <Filter>SessionController</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldServer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldService.cpp">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Session</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketTask.cpp">
+      <Filter>Task</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionManager.cpp">
+      <Filter>SessionManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Player.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Party.h"><Filter>Party</Filter></ClInclude>
+    <ClInclude Include="PartyManager.h"><Filter>PartyManager</Filter></ClInclude>
+    <ClInclude Include="ChatManager.h">
+      <Filter>ChatManager</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldPacketCreator.h">
+      <Filter>WorldPacketCreator</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionController.h">
+      <Filter>SessionController</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldService.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketTask.h">
+      <Filter>Task</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>SessionManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DB"><UniqueIdentifier>{49557DAB-4F4D-4DDC-B1BD-693899ACF36A}</UniqueIdentifier></Filter>
+    <Filter Include="Config"><UniqueIdentifier>{D26EF208-50E1-434C-9F98-71CD0E310DD8}</UniqueIdentifier></Filter>
+    <ClCompile Include="CharacterDB.cpp"><Filter>DB</Filter></ClCompile>
+    <ClInclude Include="CharacterDB.h"><Filter>DB</Filter></ClInclude>
+    <ClCompile Include="WorldServerConfig.cpp"><Filter>Config</Filter></ClCompile>
+    <ClInclude Include="WorldServerConfig.h"><Filter>Config</Filter></ClInclude>
+  </ItemGroup>
+</Project>

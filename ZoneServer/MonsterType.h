@@ -3,7 +3,7 @@
 enum class eMonsterType : unsigned short
 {
 	Ghost = 0,
-	Lizard,
-	Knight,
-	Rat,
+	BlueMushroom = 1,
+	Knight = 2,
+	Slime = 3,
 };

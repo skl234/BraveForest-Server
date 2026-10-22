@@ -21,6 +21,8 @@ CPlayer::CPlayer(uint64_t _objectNum, const CPlayerStatDB* _playerStatDB) :
 void CPlayer::Initialize(uint64_t _characterIndex, const std::string& _name, eClassState _class, uint64_t _level, uint64_t _experience)
 {
 	m_characterIndex = _characterIndex;
+	m_partyNum = 0;
+	m_partyZoneId = 0;
 	m_name = _name;
 	m_class = _class;
 	m_state = ePlayerState::Idle;
@@ -45,6 +47,8 @@ void CPlayer::Initialize(uint64_t _characterIndex, const std::string& _name, eCl
 void CPlayer::Cleanup()
 {
 	m_characterIndex = 0;
+	m_partyNum = 0;
+	m_partyZoneId = 0;
 	m_name.clear();
 	m_class = eClassState::Warrior;
 	m_state = ePlayerState::Idle;
@@ -61,6 +65,7 @@ void CPlayer::Cleanup()
 	m_attackTargetObjectNum = UINT64_MAX;
 	m_nextHitIndex = 0;
 }
+
 
 void CPlayer::UpdatePosition(const VECTOR3& _position)
 {
@@ -84,6 +89,7 @@ void CPlayer::UpdateState(ePlayerState _state)
 	if (m_state == ePlayerState::Die) return;
 	m_state = _state;
 }
+
 
 uint64_t CPlayer::TakeDamage(uint64_t _damage)
 {
@@ -133,6 +139,7 @@ bool CPlayer::AddExperience(uint64_t _experience)
 	return levelUp;
 }
 
+
 bool CPlayer::StartAttack(eAttackType _attackType, uint64_t _targetObjectNum)
 {
 	if (m_state == ePlayerState::Die || _attackType == eAttackType::None) return false;
@@ -151,6 +158,32 @@ void CPlayer::ClearAttack()
 	m_nextHitIndex = 0;
 	if (m_state != ePlayerState::Die) m_state = ePlayerState::Idle;
 }
+
+bool CPlayer::ConsumeRapidHit(uint8_t _hitIndex)
+{
+	if (m_attackType != eAttackType::RapidFire) return false;
+	if (_hitIndex != m_nextHitIndex || m_nextHitIndex >= 20) return false;
+	++m_nextHitIndex;
+	return true;
+}
+
+
+void CPlayer::UpdateParty(uint64_t _partyNum, uint64_t _zoneId)
+{
+	m_partyNum = _partyNum;
+	m_partyZoneId = _zoneId;
+}
+
+uint64_t CPlayer::GetPartyNum()
+{
+	return m_partyNum;
+}
+
+uint64_t CPlayer::GetPartyZoneId()
+{
+	return m_partyZoneId;
+}
+
 
 void CPlayer::EnterView(CFieldObject* _object)
 {
@@ -189,10 +222,11 @@ bool CPlayer::IsVisible(CFieldObject* _object)
 	return m_visibleObjectList.find(_object) != m_visibleObjectList.end();
 }
 
-eClassState CPlayer::GetClass()
+void CPlayer::ClearViewEventList()
 {
-	return m_class;
+	m_viewEventList.clear();
 }
+
 
 uint64_t CPlayer::GetCharacterIndex()
 {
@@ -204,10 +238,16 @@ std::string& CPlayer::GetName()
 	return m_name;
 }
 
+eClassState CPlayer::GetClass()
+{
+	return m_class;
+}
+
 ePlayerState CPlayer::GetState()
 {
 	return m_state;
 }
+
 
 uint64_t CPlayer::GetMaxHP()
 {
@@ -238,21 +278,17 @@ uint64_t CPlayer::GetRequiredExperience()
 	return m_level * m_level * 100;
 }
 
+
 eAttackType CPlayer::GetAttackType()
 {
 	return m_attackType;
 }
+
 uint64_t CPlayer::GetAttackTargetObjectNum()
 {
 	return m_attackTargetObjectNum;
 }
-bool CPlayer::ConsumeRapidHit(uint8_t _hitIndex)
-{
-	if (m_attackType != eAttackType::RapidFire) return false;
-	if (_hitIndex != m_nextHitIndex || m_nextHitIndex >= 20) return false;
-	++m_nextHitIndex;
-	return true;
-}
+
 
 VECTOR3& CPlayer::GetDestPosition()
 {
@@ -267,9 +303,4 @@ std::set<CFieldObject*>& CPlayer::GetVisibleObjectList()
 std::vector<FIELD_VIEW_EVENT>& CPlayer::GetViewEventList()
 {
 	return m_viewEventList;
-}
-
-void CPlayer::ClearViewEventList()
-{
-	m_viewEventList.clear();
 }

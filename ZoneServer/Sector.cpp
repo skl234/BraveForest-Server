@@ -5,6 +5,7 @@ void CSector::SetAdjoiningSectorList(const std::vector<CSector*>& _adjoiningSect
 	m_adjoiningSectorList = _adjoiningSectorList;
 }
 
+
 void CSector::Enter(CFieldObject* _object)
 {
 	if (_object == nullptr) return;
@@ -16,6 +17,7 @@ void CSector::Leave(CFieldObject* _object)
 	if (_object == nullptr) return;
 	m_objectList.erase(_object);
 }
+
 
 bool CSector::IsContain(CFieldObject* _object)
 {
@@ -36,6 +38,7 @@ bool CSector::IsAdjoining(CSector* _sector)
 	}
 	return false;
 }
+
 
 std::vector<CSector*>& CSector::GetAdjoiningSectorList()
 {

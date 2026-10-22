@@ -9,6 +9,7 @@ class CCell
 private:
 	uint64_t	m_index = 0;
 	bool		m_block = NULL;
+
 	uint64_t	m_x = 0;
 	uint64_t	m_z = 0;
 
@@ -27,21 +28,22 @@ public:
 	CCell() = default;
 	~CCell() = default;
 
-	void Initialize(uint64_t _index, bool _block, uint64_t _x, uint64_t _z,
-		std::vector<CCell*>& _adjoingCellList);
-	bool IsBlock();
-	void CleanPath();
-	void SetPath(CCell* _parent, uint64_t _g, uint64_t _h, uint64_t _f, uint64_t _routePriority);
+	void					Initialize(uint64_t _index, bool _block, uint64_t _x, uint64_t _z, std::vector<CCell*>& _adjoingCellList);
 
-	uint64_t GetIndex();
-	std::vector<CCell*>& GetAdjoingCellList();
-	CCell* GetParent();
-	uint64_t GetX();
-	uint64_t GetZ();
-	uint64_t GetG();
-	uint64_t GetH();
-	uint64_t GetF();
-	uint64_t GetRoutePriority();
+	bool					IsBlock();
+	uint64_t				GetIndex();
+	VECTOR3					GetPosition();
+	uint64_t				GetX();
+	uint64_t				GetZ();
 
-	VECTOR3 GetPosition();
+	std::vector<CCell*>&	GetAdjoingCellList();
+
+	void					SetPath(CCell* _parent, uint64_t _g, uint64_t _h, uint64_t _f, uint64_t _routePriority);
+	void					CleanPath();
+
+	CCell*					GetParent();
+	uint64_t				GetG();
+	uint64_t				GetH();
+	uint64_t				GetF();
+	uint64_t				GetRoutePriority();
 };

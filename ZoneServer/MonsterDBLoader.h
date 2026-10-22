@@ -14,6 +14,8 @@ private:
 public:
 	CMonsterDBLoader() = default;
 	~CMonsterDBLoader() = default;
-	bool Initialize(CDBConnectionPool* _connectionPool);
-	bool Load(std::vector<MONSTER_SPAWN_INFO>& _typeList);
+
+	bool	Initialize(CDBConnectionPool* _connectionPool);
+
+	bool	Load(std::vector<MONSTER_SPAWN_INFO>& _typeList);
 };

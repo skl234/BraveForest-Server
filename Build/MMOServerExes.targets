@@ -17,12 +17,12 @@
     </CopyFileToFolders>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(MSBuildProjectName)'=='LoginServer'">
+  <ItemGroup Condition="'$(MSBuildProjectName)'=='LoginServer' Or '$(MSBuildProjectName)'=='WorldServer'">
     <CopyFileToFolders Include="$(MMOServerRoot)Config\Database.local.ini" Condition="Exists('$(MMOServerRoot)Config\Database.local.ini')">
-      <DestinationFolders>$(MMOServerExeDir)LoginServer\Config\</DestinationFolders>
+      <DestinationFolders>$(MMOServerExeDir)$(MSBuildProjectName)\Config\</DestinationFolders>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="$(MMOServerRoot)Data\ZoneInfo.txt">
-      <DestinationFolders>$(MMOServerExeDir)LoginServer\Data\</DestinationFolders>
+    <CopyFileToFolders Include="$(MMOServerRoot)Data\ZoneInfo.txt" Condition="'$(MSBuildProjectName)'=='WorldServer'">
+      <DestinationFolders>$(MMOServerExeDir)WorldServer\Data\</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
 
@@ -49,9 +49,6 @@
     </CopyFileToFolders>
     <CopyFileToFolders Include="$(MMOServerRoot)Data\BeginnerZoneField.txt;$(MMOServerRoot)Data\BeginnerZoneSpawn.txt">
       <DestinationFolders>$(MMOServerExeDir)ZoneServer_Beginner\Data\</DestinationFolders>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="$(MSBuildThisFileDirectory)ServerRuntime\README.md">
-      <DestinationFolders>$(MMOServerExeDir)</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
 </Project>

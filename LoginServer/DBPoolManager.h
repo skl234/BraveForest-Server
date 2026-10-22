@@ -7,7 +7,6 @@
 enum class eDBType : byte
 {
 	Account = 0,
-	Game,
 };
 
 template <eDBType _T>

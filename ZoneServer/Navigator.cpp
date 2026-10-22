@@ -11,6 +11,7 @@ std::vector<VECTOR3> CNavigator::Navigate(CCellGrid& _cellGrid, CCell* _start, C
 	return optimizationPath;
 }
 
+
 std::vector<VECTOR3> CNavigator::Optimization(std::vector<VECTOR3>& _path)
 {
 	std::vector<VECTOR3> optimizationPath;

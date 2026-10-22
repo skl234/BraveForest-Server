@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <cstdint>
 #include "MonsterType.h"
 #include "VECTOR3.h"
 

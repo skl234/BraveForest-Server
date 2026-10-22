@@ -1,6 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="DB">
+      <UniqueIdentifier>{d8556343-990b-45af-9dc6-6d825226cfde}</UniqueIdentifier>
+    </Filter>
     <Filter Include="헤더 파일">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -27,6 +30,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AccountDB.cpp"><Filter>DB</Filter></ClCompile>
     <ClCompile Include="LoginServer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -38,6 +42,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AccountDB.h"><Filter>DB</Filter></ClInclude>
     <ClInclude Include="LoginService.h">
       <Filter>Service</Filter>
     </ClInclude>

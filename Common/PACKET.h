@@ -6,6 +6,7 @@
 #include "PACKET_HEADER.h"
 #include "CHARACTER.h"
 #include "ZONE.h"
+#include "BACK_SERVER_INFO.h"
 
 static std::vector<byte> AttachProxyHeader(const std::vector<byte>& _packet, const PROXY_HEADER& _header)
 {
@@ -123,6 +124,7 @@ struct PACKET_S2C_CREATE_ACCOUNT
 		packetHeader{ sizeof(PACKET_S2C_CREATE_ACCOUNT) - sizeof(PROXY_HEADER), ePacketType::S2C_CreateAccount } {}
 };
 
+// WorldServer: 캐릭터 선택창 요청
 struct PACKET_C2S_CHARACTERLIST
 {
 	PACKET_HEADER header;
@@ -541,6 +543,376 @@ struct PACKET_S2C_PLAYER_HIT
 		proxyHeader{ NULL, NULL },
 		packetHeader{ sizeof(PACKET_S2C_PLAYER_HIT) - sizeof(PROXY_HEADER), ePacketType::S2C_PlayerHit },
 		playerObjectNum(0), monsterObjectNum(0), damage(0), hp(0) {}
+};
+
+// WorldServer ================================
+enum class ePartyResult : uint8_t
+{
+	Success = 0,
+	InvalidState,
+	NotFound,
+	AlreadyInParty,
+	NotLeader,
+	Full,
+	InvitePending,
+	InvalidTarget,
+	Canceled,
+	Declined,
+	InvalidName,
+	ApplicationPending,
+	ApplicationNotFound,
+};
+
+enum class ePartyMemberState : uint8_t
+{
+	Ready = 0,
+	Moving,
+	Dead,
+	Offline,
+};
+
+struct PARTY_MEMBER_STATUS
+{
+	uint64_t			sessionId;
+	uint64_t			characterIndex;
+	uint64_t			level;
+	uint64_t			zoneId;
+	uint64_t			channelId;
+	ePartyMemberState	state;
+	uint64_t			hp;
+	uint64_t			maxHP;
+};
+
+struct PARTY_MEMBER_INFO
+{
+	PARTY_MEMBER_STATUS	status;
+	eJobClass			jobClass;
+	uint8_t				nameSize;
+	char				name[30];
+};
+
+struct PACKET_C2S_CREATE_PARTY
+{
+	PACKET_HEADER	header;
+	uint8_t			nameSize;
+	char			name[1];
+};
+
+struct PACKET_C2S_INVITE_PARTY
+{
+	PACKET_HEADER	header;
+	uint64_t		partyNum;
+	uint8_t			nameSize;
+	char			name[1];
+};
+
+struct PACKET_C2S_ANSWER_PARTY_INVITE
+{
+	PACKET_HEADER	header;
+	uint64_t		inviteNum;
+	uint8_t			accept;
+};
+
+// Leave / Disband
+struct PACKET_C2S_PARTY
+{
+	PACKET_HEADER	header;
+	uint64_t		partyNum;
+};
+
+// Kick / ChangeLeader
+struct PACKET_C2S_PARTY_TARGET
+{
+	PACKET_HEADER	header;
+	uint64_t		partyNum;
+	uint64_t		sessionId;
+	uint64_t		characterIndex;
+};
+
+struct PACKET_C2S_PARTY_CHAT
+{
+	PACKET_HEADER	header;
+	uint64_t		partyNum;
+	uint8_t			chatSize;
+	char			text[1];
+};
+
+struct PACKET_S2C_PARTY_RESULT
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	ePacketType		requestType;
+	ePartyResult	result;
+	uint64_t		number;
+};
+
+struct PACKET_S2C_PARTY_INVITE
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint64_t		inviteNum;
+	uint64_t		partyNum;
+	uint8_t			nameSize;
+	char			name[1];
+};
+
+struct PACKET_S2C_CANCEL_PARTY_INVITE
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint64_t		inviteNum;
+	ePartyResult	reason;
+};
+
+struct PACKET_S2C_PARTY_INFO
+{
+	PROXY_HEADER		proxyHeader;
+	PACKET_HEADER		packetHeader;
+	uint64_t			partyNum;
+	uint64_t			createNum;
+	uint64_t			leaderCharacterIndex;
+	uint8_t				memberCount;
+	uint8_t				nameSize;
+	byte				data[1]; // 파티명 + PARTY_MEMBER_INFO 순서
+};
+
+struct PACKET_C2S_PARTY_LIST
+{
+	PACKET_HEADER	header;
+	uint64_t		page;
+};
+
+struct PACKET_C2S_APPLY_PARTY
+{
+	PACKET_HEADER	header;
+	uint64_t		partyNum;
+	uint64_t		createNum;
+};
+
+struct PACKET_C2S_CANCEL_PARTY_APPLICATION
+{
+	PACKET_HEADER	header;
+	uint64_t		requestNum;
+};
+
+struct PACKET_C2S_ANSWER_PARTY_APPLICATION
+{
+	PACKET_HEADER	header;
+	uint64_t		requestNum;
+	uint8_t			accept;
+};
+
+struct PARTY_LIST_INFO
+{
+	uint64_t		partyNum;
+	uint64_t		createNum;
+	uint64_t		leaderCharacterIndex;
+	uint8_t			memberCount;
+	uint8_t			nameSize;
+	byte			data[1]; // 파티명 + PARTY_MEMBER_INFO 순서
+};
+
+struct PACKET_S2C_PARTY_LIST
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint64_t		page;
+	uint64_t		totalCount;
+	uint8_t			partyCount;
+	byte			data[1]; // PARTY_LIST_INFO 반복
+};
+
+struct PARTY_APPLICATION_INFO
+{
+	uint64_t		requestNum;
+	uint64_t		level;
+	eJobClass		jobClass;
+	uint8_t			nameSize;
+	char			name[30];
+};
+
+struct PACKET_S2C_PARTY_APPLICATION_LIST
+{
+	PROXY_HEADER			proxyHeader;
+	PACKET_HEADER			packetHeader;
+	uint64_t				partyNum;
+	uint64_t				createNum;
+	uint64_t				totalCount;
+	uint64_t				startIndex;
+	uint16_t				count;
+	PARTY_APPLICATION_INFO	applicationList[1];
+};
+
+struct PACKET_S2C_PARTY_APPLICATION_STATE
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint64_t		requestNum;
+	uint64_t		partyNum;
+	uint64_t		createNum;
+	uint8_t			active;
+	ePartyResult	result;
+};
+
+struct PACKET_S2C_PARTY_MEMBER_STATUS
+{
+	PROXY_HEADER		proxyHeader;
+	PACKET_HEADER		packetHeader;
+	uint64_t			partyNum;
+	PARTY_MEMBER_STATUS	status;
+};
+
+struct PACKET_S2C_PARTY_CHAT
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint64_t		partyNum;
+	uint8_t			nameSize;
+	uint8_t			chatSize;
+	char			text[1];
+};
+
+struct PACKET_S2S_SET_PARTY
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint64_t		partyNum;
+	uint64_t		characterIndex;
+	uint64_t		zoneId;
+	uint64_t		channelId;
+};
+
+struct PACKET_S2S_PARTY_MEMBER_STATUS
+{
+	PROXY_HEADER		proxyHeader;
+	PACKET_HEADER		packetHeader;
+	uint64_t			partyNum;
+	ePartyResult		result;
+	PARTY_MEMBER_STATUS	status;
+};
+
+enum class eWhisperResult : uint8_t
+{
+	Success = 0,
+	NotFound,
+	Fail,
+};
+
+// text는 대상 이름 + 대화 순서. 길이는 UTF-8 바이트 수
+struct PACKET_C2S_WHISPER
+{
+	PACKET_HEADER	header;
+	uint8_t			nameSize;
+	uint8_t			chatSize;
+	char			text[1];
+};
+
+// 수신자에게 전달. 이름은 서버가 가진 발신자 이름
+struct PACKET_S2C_WHISPER
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint8_t			nameSize;
+	uint8_t			chatSize;
+	char			text[1];
+};
+
+// 발신자에게 전달. 성공이면 대상 이름 + 대화, 실패면 대상 이름만
+struct PACKET_S2C_WHISPER_RESULT
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	eWhisperResult	result;
+	uint8_t			nameSize;
+	uint8_t			chatSize;
+	char			text[1];
+};
+
+struct PACKET_C2S_WORLD_CHAT
+{
+	PACKET_HEADER header;
+	uint8_t       chatSize;
+	char          text[1];
+};
+
+// 수신자는 World에서 결정. text는 UTF-8 이름 + 채팅 순서.
+struct PACKET_S2C_WORLD_CHAT
+{
+	PROXY_HEADER  proxyHeader;
+	PACKET_HEADER packetHeader;
+	uint8_t       nameSize;
+	uint8_t       chatSize;
+	char          text[1];
+};
+
+// Proxy -> World. 로그인 성공 후 계정 등록. 이름은 캐릭터 선택 시 등록.
+struct PACKET_S2S_ENTER_WORLD
+{
+	PROXY_HEADER  proxyHeader;
+	PACKET_HEADER packetHeader;
+};
+
+// 접속 종료 요청. Zone과 Login 정리가 끝나야 세션 번호를 재사용.
+struct PACKET_S2S_LEAVE_WORLD
+{
+	PROXY_HEADER  proxyHeader;
+	PACKET_HEADER packetHeader;
+
+	PACKET_S2S_LEAVE_WORLD() :
+		proxyHeader{ NULL, NULL },
+		packetHeader{ sizeof(PACKET_S2S_LEAVE_WORLD) - sizeof(PROXY_HEADER), ePacketType::S2S_LeaveWorld } {}
+};
+
+struct PACKET_S2S_SET_ZONE
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint64_t		zoneId;
+};
+
+// 원본에는 PROXY_HEADER도 포함.
+struct PACKET_S2S_SEND_SERVER
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	eBackServerType	serverType;
+	uint64_t		zoneId;
+	byte			packet[1];
+};
+
+// 목록 뒤에 클라이언트용 패킷 하나를 붙임.
+struct PACKET_S2S_SEND_CLIENT_LIST
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	uint16_t		clientCount;
+	PROXY_HEADER	clientList[1];
+};
+
+struct PACKET_S2S_CHARACTER
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	eZoneResult		result;
+	PLAYER_DATA		playerData;
+	uint8_t			nameSize;
+	char			name[1];
+};
+
+struct PACKET_S2S_ZONE
+{
+	PROXY_HEADER	proxyHeader;
+	PACKET_HEADER	packetHeader;
+	eZoneResult		result;
+	uint64_t		zoneId;
+	uint64_t		channelId;
+	uint64_t		portalId;
+	bool			respawn;
+	PLAYER_DATA		playerData;
+
+	PACKET_S2S_ZONE(ePacketType _type) :
+		proxyHeader{}, packetHeader{sizeof(PACKET_S2S_ZONE) - sizeof(PROXY_HEADER), _type},
+		result(eZoneResult::Fail), zoneId(0), channelId(0), portalId(0), respawn(false), playerData{} {}
 };
 
 // =============================================

@@ -30,6 +30,7 @@ bool CFieldObject::IsActive()
 	return m_active;
 }
 
+
 VECTOR3& CFieldObject::GetPosition()
 {
 	return m_position;
@@ -40,6 +41,7 @@ float CFieldObject::GetRotationY()
 	return m_rotationY;
 }
 
+
 CField* CFieldObject::GetField()
 {
 	return m_field;
@@ -49,6 +51,7 @@ CSector* CFieldObject::GetSector()
 {
 	return m_sector;
 }
+
 
 void CFieldObject::WriteInfo(CMemoryStream& _stream)
 {

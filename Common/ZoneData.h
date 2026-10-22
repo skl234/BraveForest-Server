@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cmath>
 
-// 로그인/존서버가 동일한 존 설정 파일을 읽어서 사용
+// 월드/존서버가 동일한 존 설정 파일을 읽어서 사용
 class CZoneData
 {
 private:

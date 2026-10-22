@@ -9,6 +9,8 @@ private:
 	std::atomic<uint64_t> m_accountIndex;	//NULL : Login X
 	std::atomic<uint64_t> m_zoneId = NULL;	
 	std::atomic<bool>	  m_logoutPending = false;
+	std::atomic<bool>	  m_loginPending = false;
+	std::atomic<bool>	  m_acquired = false;
 	
 public:
 	CClientConnection(const uint64_t _sessionId, COverlappedManager* _overlManager, uint64_t _recvBufferSize);
@@ -23,4 +25,8 @@ public:
 	uint64_t GetZoneId();
 	bool	 TryStartLogout();
 	void	 SetLogoutPending(bool _pending);
+	bool	 TryStartLogin();
+	bool	 IsLoginPending();
+	void	 SetLoginPending(bool _pending);
+	bool	 SetAcquired(bool _acquired);
 };

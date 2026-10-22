@@ -14,6 +14,26 @@ void CSession::Activate(uint64_t _sessionId, uint64_t _accountIndex)
 	m_active = true;
 }
 
+void CSession::Cleanup()
+{
+	CLockGuard lockGuard(m_lock);
+	m_sessionId = 0;
+	m_accountIndex = 0;
+	m_characterIndex = 0;
+	m_channelId = 0;
+	m_player = nullptr;
+	m_active = false;
+	m_reserved = false;
+	m_transferPending = false;
+}
+
+bool CSession::IsActive()
+{
+	CLockGuard lockGuard(m_lock, eLockMode::Shared);
+	return m_active;
+}
+
+
 void CSession::SetPlayer(uint64_t _characterIndex, uint64_t _channelId, CPlayer* _player)
 {
 	CLockGuard lockGuard(m_lock);
@@ -29,20 +49,38 @@ void CSession::ClearPlayer()
 {
 	CLockGuard lockGuard(m_lock);
 	m_characterIndex = 0;
-	m_channelId = 0;
+	if (!m_reserved) m_channelId = 0;
 	m_player = nullptr;
 }
 
-void CSession::Cleanup()
+
+void CSession::SetReservation(uint64_t _channelId, bool _reserved)
 {
 	CLockGuard lockGuard(m_lock);
-	m_sessionId = 0;
-	m_accountIndex = 0;
-	m_characterIndex = 0;
-	m_channelId = 0;
-	m_player = nullptr;
-	m_active = false;
+	m_reserved = _reserved;
+	if (_reserved) m_channelId = _channelId;
 }
+
+bool CSession::IsReserved()
+{
+	CLockGuard lockGuard(m_lock, eLockMode::Shared);
+	return m_reserved;
+}
+
+
+void CSession::SetTransferPending(bool _pending, uint64_t _channelId)
+{
+	CLockGuard lockGuard(m_lock);
+	m_transferPending = _pending;
+	m_channelId = _channelId;
+}
+
+bool CSession::IsTransferPending()
+{
+	CLockGuard lockGuard(m_lock, eLockMode::Shared);
+	return m_transferPending;
+}
+
 
 uint64_t CSession::GetSessionId()
 {
@@ -72,10 +110,4 @@ CPlayer* CSession::GetPlayer()
 {
 	CLockGuard lockGuard(m_lock, eLockMode::Shared);
 	return m_player;
-}
-
-bool CSession::IsActive()
-{
-	CLockGuard lockGuard(m_lock, eLockMode::Shared);
-	return m_active;
 }

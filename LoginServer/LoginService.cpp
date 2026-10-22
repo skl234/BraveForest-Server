@@ -14,14 +14,9 @@ bool CLoginService::OnInit()
 {
 	LOGINSERVER_CONFIG* config = static_cast<LOGINSERVER_CONFIG*>(m_config);
 	if (config == nullptr) return false;
-	if (!m_zoneData.Load(config->zoneInfoPath)) return false;
 
 	if (!CODBCDriver::GetInstance().Initialize()) return false;
 	if (!CDBPoolManager<eDBType::Account>::GetInstance().Initialize(config->dbUser, config->dbPassword, config->accountDsn, config->accountConnectionCount))
-	{
-		return false;
-	}
-	if (!CDBPoolManager<eDBType::Game>::GetInstance().Initialize(config->dbUser, config->dbPassword, config->gameDsn, config->gameConnectionCount))
 	{
 		return false;
 	}
@@ -32,7 +27,7 @@ bool CLoginService::OnInit()
 	taskList.reserve(config->packetTaskPoolSize);
 	for (uint64_t i = 0; i < config->packetTaskPoolSize; ++i)
 	{
-		taskList.emplace_back(std::make_unique<CPacketTask>(&m_packetTaskPool, &m_zoneData));
+		taskList.emplace_back(std::make_unique<CPacketTask>(&m_packetTaskPool));
 	}
 	m_packetTaskPool.Initialize(std::move(taskList));
 
