@@ -76,7 +76,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ProxyServer 정보.txt" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

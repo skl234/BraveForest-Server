@@ -31,30 +31,23 @@
 *.avi
 *.dmp
 /MMOServerExes/
-/DummyReConnect/accounts.txt
+/DummyReConnect/
 /ProxyServer/LoginServer.ini
 
-# Preserve the build integration, exclude local experiments and backups
-/Build/*
-!/Build/MMOServerExes.targets
-!/Build/ServerRuntime/
-/Build/ServerRuntime/*
-!/Build/ServerRuntime/README.md
+# Private build and test tools
+/Build/
+/Tools/
 /Portfolio/
-/Data/*.md
-!/Data/README.md
-*.local.ini
+/Data/
+/Config/
+*.ini
+*.targets
+.editorconfig
+.gitattributes
+.clang-format
 .env
 .env.*
 *.bak
 *.backup
 *Restore*Accounts.sql
 *AccountBackup*
-
-# One-time local database maintenance is not part of the public client
-/Tools/DummyClient/*Test*.ps1
-/Tools/DummyClient/ResetDummyAccounts.ps1
-/Tools/DummyClient/CleanupTestAccounts.ps1
-/Tools/DummyClient/RestoreInitialSpawns.ps1
-/Tools/DummyClient/VerifyDatabase.ps1
-/Tools/DummyClient/TEST_RESULTS.md

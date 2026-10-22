@@ -1,6 +1,0 @@
-ZoneCount 2
-Zone 1 "평온한 마을" "TownScene" 100.000 0 38.340 1 1
-Zone 2 "비기너존" "BeginnerZoneScene" 29.000 0 33.000 0 1
-PortalCount 2
-Portal 1 1 2 29.000 0 33.000 1
-Portal 2 1 1 92.620 0 134.280 1

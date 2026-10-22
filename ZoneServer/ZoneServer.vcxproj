@@ -226,6 +226,5 @@
     <ClCompile Include="WorldPacket.cpp" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\Build\MMOServerExes.targets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   </ImportGroup>
 </Project>
