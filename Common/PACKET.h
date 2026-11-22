@@ -47,24 +47,6 @@ struct PACKET_S2C_PROXY_ECHO
 		header{ sizeof(PACKET_S2C_PROXY_ECHO), ePacketType::S2C_ProxyEcho } {}
 };
 
-struct PACKET_C2S_PROXY_MONITOR
-{
-	PACKET_HEADER header;
-
-	PACKET_C2S_PROXY_MONITOR() :
-		header{ sizeof(PACKET_C2S_PROXY_MONITOR), ePacketType::C2S_ProxyMonitor } {}
-};
-
-struct PACKET_S2C_PROXY_MONITOR
-{
-	PACKET_HEADER header;
-	uint64_t	  clientConnectionCount;
-	uint64_t	  packetJobSize;
-
-	PACKET_S2C_PROXY_MONITOR() :
-		header{ sizeof(PACKET_S2C_PROXY_MONITOR), ePacketType::S2C_ProxyMonitor } {}
-};
-
 // LoginServer ================================
 struct PACKET_C2S_LOGIN
 {
@@ -215,26 +197,6 @@ struct PACKET_S2C_LOGIN_ECHO
 	PACKET_S2C_LOGIN_ECHO() :
 		proxyHeader{ NULL, NULL },
 		packetHeader{ sizeof(PACKET_S2C_LOGIN_ECHO) - sizeof(PROXY_HEADER), ePacketType::S2C_LoginEcho } {}
-};
-
-struct PACKET_C2S_LOGIN_MONITOR
-{
-	PACKET_HEADER header;
-
-	PACKET_C2S_LOGIN_MONITOR() :
-		header{ sizeof(PACKET_C2S_LOGIN_MONITOR), ePacketType::C2S_LoginMonitor } {}
-};
-
-struct PACKET_S2C_LOGIN_MONITOR
-{
-	PROXY_HEADER  proxyHeader;
-	PACKET_HEADER packetHeader;
-	uint64_t	  packetJobSize;
-	uint64_t      dbJobSize;
-
-	PACKET_S2C_LOGIN_MONITOR() :
-		proxyHeader{ NULL, NULL },
-		packetHeader{ sizeof(PACKET_S2C_LOGIN_MONITOR) - sizeof(PROXY_HEADER), ePacketType::S2C_LoginMonitor } {}
 };
 
 // ZoneServer =================================

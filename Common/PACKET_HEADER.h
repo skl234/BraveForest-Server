@@ -7,8 +7,6 @@ enum class ePacketType : uint16_t
 	// ===== Proxy (0 ~ 999)
 	C2S_ProxyEcho = 0,
 	S2C_ProxyEcho,
-	C2S_ProxyMonitor,
-	S2C_ProxyMonitor,
 
 	// ===== LoginServer (1000 ~ 1999)
 	C2S_Login = 1000,
@@ -27,8 +25,6 @@ enum class ePacketType : uint16_t
 
 	C2S_LoginEcho,
 	S2C_LoginEcho,
-	C2S_LoginMonitor,
-	S2C_LoginMonitor,
 
 	// ===== ZoneServer (2000 ~ 2999)
 	C2S_EnterZone = 2000,
