@@ -6,13 +6,18 @@ bool CLoginServerConfig::Load(LOGINSERVER_CONFIG& _config)
 	_config = {};
 	_config.logPath = "Log.log";
 	_config.iocpThreadSize = 6;
-	_config.ip = "192.168.219.100";
+	_config.iocpConcurrency = 0;
+	_config.ip = "127.0.0.1";
 	_config.port = 30003;
 	_config.postAcceptSize = 1;
 	_config.maxClientConnection = 1;
 	_config.logicThreadSize = 1;
 	_config.accountConnectionCount = 1;
 	_config.packetTaskPoolSize = 100000;
+
+	_config.recvEventSize = 1;
+	_config.sendEventSize = 1;
+	_config.acceptEventSize = _config.postAcceptSize;
 
 	std::filesystem::path directory = CINIFile::GetExecutableDirectory();
 	if (directory.empty()) return false;

@@ -4,13 +4,18 @@
 bool CWorldServerConfig::Load(WORLDSERVER_CONFIG& _config, const char* _zoneInfoPath)
 {
 	_config = {};
-	_config.ip = "192.168.219.100";
+	_config.ip = "127.0.0.1";
 	_config.port = 30010;
 	_config.iocpThreadSize = 1;
+	_config.iocpConcurrency = 0;
 	_config.logicThreadSize = 1;
 	_config.postAcceptSize = 1;
 	_config.maxClientConnection = 1;
 	_config.gameConnectionCount = 1;
+
+	_config.recvEventSize = 1;
+	_config.sendEventSize = 1;
+	_config.acceptEventSize = _config.postAcceptSize;
 
 	const std::filesystem::path directory = CINIFile::GetExecutableDirectory();
 	if (directory.empty()) return false;

@@ -22,9 +22,6 @@
     <Filter Include="Config">
       <UniqueIdentifier>{e48d29ea-a119-41aa-8a41-1fc857a4c63c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Monitor">
-      <UniqueIdentifier>{7e10a17d-df9e-447b-8206-cf6797396b8e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Service">
       <UniqueIdentifier>{ace6172b-2497-4219-872e-148c2b4649ee}</UniqueIdentifier>
     </Filter>
@@ -42,9 +39,6 @@
     <ClCompile Include="ClientConnectionManager.cpp">
       <Filter>ConnectionManager</Filter>
     </ClCompile>
-    <ClCompile Include="Monitor.cpp">
-      <Filter>Monitor</Filter>
-    </ClCompile>
     <ClCompile Include="ProxyService.cpp">
       <Filter>Service</Filter>
     </ClCompile>
@@ -53,6 +47,9 @@
     </ClCompile>
     <ClCompile Include="PacketTask.cpp">
       <Filter>PacketTask</Filter>
+    </ClCompile>
+    <ClCompile Include="ProxyServerConfig.cpp">
+      <Filter>Config</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -65,22 +62,20 @@
     <ClInclude Include="ClientConnectionManager.h">
       <Filter>ConnectionManager</Filter>
     </ClInclude>
-    <ClInclude Include="Monitor.h">
-      <Filter>Monitor</Filter>
-    </ClInclude>
     <ClInclude Include="ProxyService.h">
       <Filter>Service</Filter>
     </ClInclude>
     <ClInclude Include="ServerConnectionManager.h">
       <Filter>ConnectionManager</Filter>
     </ClInclude>
+    <ClInclude Include="ProxyServerConfig.h">
+      <Filter>Config</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="ProxyServer 정보.txt" />
   </ItemGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ProxyServerConfig.h" />
-    <ClCompile Include="ProxyServerConfig.cpp" />
+    <CopyFileToFolders Include="$(TargetPath)" />
   </ItemGroup>
 </Project>

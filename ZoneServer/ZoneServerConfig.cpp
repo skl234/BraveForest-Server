@@ -35,7 +35,8 @@ bool CZoneServerConfig::Load(ZONESERVER_CONFIG& _config, const char* _configPath
 
 	_config.logPath = "ZoneServer.log";
 	_config.iocpThreadSize = zone.ReadNumber(L"Zone", L"IOCPThreadSize", 6);
-	std::wstring ip = zone.ReadString(L"Zone", L"IP", L"192.168.219.100");
+	_config.iocpConcurrency = 0;
+	std::wstring ip = zone.ReadString(L"Zone", L"IP", L"127.0.0.1");
 	for (uint64_t i = 0; i < ip.size(); ++i)
 	{
 		if (ip[i] > 127) return false;
@@ -50,5 +51,9 @@ bool CZoneServerConfig::Load(ZONESERVER_CONFIG& _config, const char* _configPath
 	_config.maxMonsterPerChannel = zone.ReadNumber(L"Channel", L"MaxMonsterPerChannel", 512);
 	_config.dbConnectionCount = zone.ReadNumber(L"Database", L"ConnectionCount", static_cast<uint32_t>(_config.channelCount));
 	_config.packetTaskPoolSize = 65536;
+
+	_config.recvEventSize = 1;
+	_config.sendEventSize = 1;
+	_config.acceptEventSize = _config.postAcceptSize;
 	return true;
 }

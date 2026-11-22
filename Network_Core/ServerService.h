@@ -1,14 +1,21 @@
 ﻿#pragma once
 #include <WinSock2.h>
-#include "IOCPServer.h"
+#include "IOCP.h"
+#include "IOCPEventManager.h"
+#include "IOCPWorkerManager.h"
 #include "INI_CONFIG.h"
 #include "../Utility_Core/UtilityMacros.h"
 
 class CServerService
 {
+public:
+	DELETE_COPY_MOVE(CServerService);
+
 protected:
-	CIOCPServer	m_server;
-	INI_CONFIG* m_config;
+	CIOCP						m_iocp;
+	CIOCPEventManager			m_eventManager;
+	CIOCPWorkerManager			m_workerManager;
+	INI_CONFIG*					m_config = nullptr;
 
 public:
 	CServerService() = default;
@@ -16,13 +23,14 @@ public:
 
 	bool Initialize(INI_CONFIG* _config);
 	bool Run();
-	void Stop();
+	bool Stop();
 
 protected:
 	virtual bool OnInit() = 0;
 	virtual bool OnRun() = 0;
 	virtual void OnStop() = 0;
 
-public:
-	DELETE_COPY_MOVE(CServerService);
+private:
+	void StartWorker();
+	void ExitInitialize(const char* _section, const int _error);
 };

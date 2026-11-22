@@ -5,61 +5,21 @@
 
 class CIOCP
 {
-private:
-	HANDLE m_completionPort = NULL;
-	DWORD  m_threadSize = NULL;
-
 public:
-	CIOCP() = default;
-	~CIOCP();
-
 	DELETE_COPY_MOVE(CIOCP);
 
-	bool Initialize(DWORD _threadSize);
-	bool Regist(HANDLE _handle, ULONG_PTR _completionKey);
-	bool GQCS(DWORD* _byteTrans, ULONG_PTR* _key, OVERLAPPED** _overlapped);
+private:
+	HANDLE m_completionPort = NULL;
 
-	void Shutdown();
-	void Close();
+public:
+	CIOCP() noexcept = default;
+	~CIOCP() noexcept;
 
-	DWORD GetThreadSize();
+	bool Initialize(const DWORD _concurrency) noexcept;
+	bool IsInit() const noexcept;
+
+	bool Regist(const HANDLE _handle, const ULONG_PTR _completionKey) const noexcept;
+	bool GQCS(DWORD* const _byteTrans, ULONG_PTR* const _key, OVERLAPPED** const _overlapped, const DWORD _timeout = INFINITE) const noexcept;
+	bool Post(const DWORD _byteTrans, const ULONG_PTR _key, OVERLAPPED* const _overlapped) const noexcept;
+	void Close() noexcept;
 };
-//
-//struct IOCP_TPS
-//{
-//	DWORD		threadId;
-//	uint64_t	tps;
-//	uint64_t	tps_recv;
-//	uint64_t	tps_send;
-//	uint64_t	tps_accept;
-//};
-//
-//class CIOCP : public CSingleton<CIOCP>, public IWorker
-//{
-//	friend class CSingleton<CIOCP>;
-//
-//private:
-//	HANDLE					m_completionPort;
-//	std::vector<HANDLE>		m_handleList;
-//	std::vector<IOCP_TPS>	m_tpsList;
-//
-//private:
-//	CIOCP();
-//	~CIOCP();
-//
-//public:
-//	//=============================================
-//	//override
-//	bool Initialize(DWORD _workerSize) override;
-//	bool Start() override;
-//	void Stop() override;
-//	//=============================================
-//
-//	bool Add(HANDLE _handle, ULONG_PTR _completionKey);
-//	
-//	std::vector<IOCP_TPS> GetTPSList();
-//
-//protected:
-//	//override
-//	void Work() override;
-//};

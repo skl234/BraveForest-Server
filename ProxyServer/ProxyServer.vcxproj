@@ -140,7 +140,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="PacketTask.cpp" />
-    <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="ProxyService.cpp" />
     <ClCompile Include="ClientConnectionManager.cpp" />
     <ClCompile Include="ProxyServer.cpp" />
@@ -148,7 +147,6 @@
     <ClCompile Include="ServerConnectionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Monitor.h" />
     <ClInclude Include="PacketTask.h" />
     <ClInclude Include="ProxyService.h" />
     <ClInclude Include="ClientConnectionManager.h" />
@@ -156,6 +154,7 @@
     <ClInclude Include="ServerConnectionManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="ProxyServer 정보.txt" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
@@ -176,5 +175,6 @@
     <ClCompile Include="ProxyServerConfig.cpp" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\Build\MMOServerExes.targets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   </ImportGroup>
 </Project>

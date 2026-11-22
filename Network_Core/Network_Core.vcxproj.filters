@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="IOCP">
@@ -7,20 +7,20 @@
     <Filter Include="TCP">
       <UniqueIdentifier>{8ade8bf8-f21f-475f-af6b-5a97270c3a5c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Overlapped">
-      <UniqueIdentifier>{1ecde985-9832-4879-adf2-2f54cfd184da}</UniqueIdentifier>
-    </Filter>
     <Filter Include="IniLoader">
       <UniqueIdentifier>{c8b12aee-6042-4b7d-8bc1-ffb9439fd84e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Service">
       <UniqueIdentifier>{69b549f7-4716-44db-80dc-debc2d843af2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Server">
-      <UniqueIdentifier>{93fb433a-8d67-4c9e-846d-e3ddae28b8a4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="IOCP_TPS">
       <UniqueIdentifier>{5a3db952-5ced-45f0-89b4-5ee94de78f3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IOCPWorkerManager">
+      <UniqueIdentifier>{adaf92d3-f458-45f5-ae17-673531db8af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IOCPEvent">
+      <UniqueIdentifier>{59cb57de-e2fc-44e3-b0f2-30630f92c095}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -33,17 +33,32 @@
     <ClCompile Include="TCPConnection.cpp">
       <Filter>TCP</Filter>
     </ClCompile>
-    <ClCompile Include="OverlappedManager.cpp">
-      <Filter>Overlapped</Filter>
+    <ClCompile Include="IpEndPoint.cpp">
+      <Filter>TCP</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket.cpp">
+      <Filter>TCP</Filter>
     </ClCompile>
     <ClCompile Include="ServerService.cpp">
       <Filter>Service</Filter>
     </ClCompile>
-    <ClCompile Include="IOCPServer.cpp">
-      <Filter>Server</Filter>
+    <ClCompile Include="IOCPWorkerManager.cpp">
+      <Filter>IOCPWorkerManager</Filter>
     </ClCompile>
-    <ClCompile Include="IOCPTPSManager.cpp">
-      <Filter>IOCP_TPS</Filter>
+    <ClCompile Include="AcceptEvent.cpp">
+      <Filter>IOCPEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="RecvEvent.cpp">
+      <Filter>IOCPEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="SendEvent.cpp">
+      <Filter>IOCPEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPEvent.cpp">
+      <Filter>IOCPEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPEventManager.cpp">
+      <Filter>IOCPEvent</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -53,14 +68,14 @@
     <ClInclude Include="TCPConnection.h">
       <Filter>TCP</Filter>
     </ClInclude>
-    <ClInclude Include="TCPAcceptor.h">
+    <ClInclude Include="IpEndPoint.h">
       <Filter>TCP</Filter>
     </ClInclude>
-    <ClInclude Include="OverlappedEx.h">
-      <Filter>Overlapped</Filter>
+    <ClInclude Include="Socket.h">
+      <Filter>TCP</Filter>
     </ClInclude>
-    <ClInclude Include="OverlappedManager.h">
-      <Filter>Overlapped</Filter>
+    <ClInclude Include="TCPAcceptor.h">
+      <Filter>TCP</Filter>
     </ClInclude>
     <ClInclude Include="INI_CONFIG.h">
       <Filter>IniLoader</Filter>
@@ -68,14 +83,29 @@
     <ClInclude Include="ServerService.h">
       <Filter>Service</Filter>
     </ClInclude>
-    <ClInclude Include="IOCPServer.h">
-      <Filter>Server</Filter>
-    </ClInclude>
     <ClInclude Include="IOCP_TPS.h">
       <Filter>IOCP_TPS</Filter>
     </ClInclude>
-    <ClInclude Include="IOCPTPSManager.h">
-      <Filter>IOCP_TPS</Filter>
+    <ClInclude Include="IOCPEvent.h">
+      <Filter>IOCPEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPContext.h">
+      <Filter>IOCPEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPWorkerManager.h">
+      <Filter>IOCPWorkerManager</Filter>
+    </ClInclude>
+    <ClInclude Include="AcceptEvent.h">
+      <Filter>IOCPEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="RecvEvent.h">
+      <Filter>IOCPEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="SendEvent.h">
+      <Filter>IOCPEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPEventManager.h">
+      <Filter>IOCPEvent</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

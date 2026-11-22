@@ -44,7 +44,7 @@ bool CZoneServerService::OnInit()
 	if (!m_channelManager.Start()) return false;
 	m_sessionManager.Initialize(config->channelCount * config->maxPlayerPerChannel);
 
-	m_proxyConnection = std::make_unique<CTCPConnection>(&m_server.GetOverlappedManager(), ZONE_RECV_BUFFER_SIZE);
+	m_proxyConnection = std::make_unique<CTCPConnection>(&m_eventManager, ZONE_RECV_BUFFER_SIZE);
 	std::vector<std::unique_ptr<CJob>> taskList;
 	taskList.reserve(config->packetTaskPoolSize);
 	for (uint64_t i = 0; i < config->packetTaskPoolSize; ++i)
@@ -52,15 +52,18 @@ bool CZoneServerService::OnInit()
 		taskList.emplace_back(std::make_unique<CPacketTask>(&m_packetTaskPool, &m_sessionManager, &m_channelManager, &m_zoneData, &m_characterDB, config->zoneId));
 	}
 	m_packetTaskPool.Initialize(std::move(taskList));
-	if (!m_acceptor.Initialize(config->ip, config->port)) return false;
-	m_acceptor.SetCreateConnectionHandler([this](SOCKET _socket, SOCKADDR_IN _addr, CIOCP* _iocp)
+	CIpEndPoint localEndPoint;
+	if (!localEndPoint.Initialize(config->ip, config->port))
+		return false;
+	if (!m_acceptor.Initialize(localEndPoint))
+		return false;
+
+	m_acceptor.SetCreateConnectionHandler([this](CSocket _socket, const CIpEndPoint& _remoteEndPoint, const CIOCP& _iocp)
 		{
 			if (m_proxyConnection->IsConnected())
-			{
-				closesocket(_socket);
 				return;
-			}
-			m_proxyConnection->Connect(_socket, _addr, _iocp);
+
+			m_proxyConnection->Connect(std::move(_socket), _remoteEndPoint, _iocp);
 		});
 	m_acceptor.SetErrorHandler([](DWORD _error)
 		{ (void)_error; });
@@ -116,7 +119,8 @@ bool CZoneServerService::OnInit()
 
 bool CZoneServerService::OnRun()
 {
-	if (!m_acceptor.Start(m_config->postAcceptSize, &m_server.GetIOCP(), &m_server.GetOverlappedManager())) return false;
+	if (!m_acceptor.Start(m_config->postAcceptSize, m_iocp, &m_eventManager))
+		return false;
 	std::cout << "ZoneServer RunStart\n";
 	while (true)
 	{

@@ -28,7 +28,7 @@ bool WorldService::OnInit()
 	if (!CODBCDriver::GetInstance().Initialize()) return false;
 	if (!m_gameDBPool.Initialize(config->dbUser, config->dbPassword, config->gameDsn, config->gameConnectionCount)) return false;
 
-	m_proxyConnection = std::make_unique<CTCPConnection>(&m_server.GetOverlappedManager(), RECV_BUFFER_SIZE);
+	m_proxyConnection = std::make_unique<CTCPConnection>(&m_eventManager, RECV_BUFFER_SIZE);
 	m_sessionManager.Initialize(MAX_SESSION_COUNT);
 	m_partyManager.Initialize(&m_sessionManager);
 	m_chatManager.Initialize(&m_sessionManager, &m_partyManager);
@@ -42,19 +42,22 @@ bool WorldService::OnInit()
 		taskList.emplace_back(std::make_unique<CPacketTask>(&m_packetTaskPool, &m_sessionManager, &m_chatManager, &m_sessionController, &m_partyManager));
 	}
 	m_packetTaskPool.Initialize(std::move(taskList));
-	if (!m_executorManager.Initialize(1)) return false;
+	if (!m_executorManager.Initialize(1))
+		return false;
 
-	if (!m_acceptor.Initialize(m_config->ip, m_config->port)) return false;
-	m_acceptor.SetCreateConnectionHandler([this](SOCKET _socket, SOCKADDR_IN _addr, CIOCP* _iocp)
+	CIpEndPoint localEndPoint;
+	if (!localEndPoint.Initialize(m_config->ip, m_config->port))
+		return false;
+	if (!m_acceptor.Initialize(localEndPoint))
+		return false;
+
+	m_acceptor.SetCreateConnectionHandler([this](CSocket _socket, const CIpEndPoint& _remoteEndPoint, const CIOCP& _iocp)
 		{
 			// Proxy 연결은 한 번만 받음. 끊기면 World 재실행.
 			if (m_proxyAccepted.exchange(true))
-			{
-				closesocket(_socket);
 				return;
-			}
 
-			if (m_proxyConnection->Connect(_socket, _addr, _iocp))
+			if (m_proxyConnection->Connect(std::move(_socket), _remoteEndPoint, _iocp))
 			{
 				std::cout << "Proxy Connected\n";
 			}
@@ -117,9 +120,10 @@ bool WorldService::OnInit()
 
 bool WorldService::OnRun()
 {
-	if (!m_executorManager.Start()) return false;
+	if (!m_executorManager.Start())
+		return false;
 
-	if (!m_acceptor.Start(m_config->postAcceptSize, &m_server.GetIOCP(), &m_server.GetOverlappedManager()))
+	if (!m_acceptor.Start(m_config->postAcceptSize, m_iocp, &m_eventManager))
 		return false;
 
 	std::cout << "RunStart : " << m_config->ip << ":" << m_config->port << "\n";

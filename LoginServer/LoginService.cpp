@@ -13,15 +13,17 @@ constexpr uint64_t RECV_BUFFER_SIZE = 1024 * 400;
 bool CLoginService::OnInit()
 {
 	LOGINSERVER_CONFIG* config = static_cast<LOGINSERVER_CONFIG*>(m_config);
-	if (config == nullptr) return false;
+	if (config == nullptr)
+		return false;
 
-	if (!CODBCDriver::GetInstance().Initialize()) return false;
+	if (!CODBCDriver::GetInstance().Initialize())
+		return false;
 	if (!CDBPoolManager<eDBType::Account>::GetInstance().Initialize(config->dbUser, config->dbPassword, config->accountDsn, config->accountConnectionCount))
 	{
 		return false;
 	}
 
-	m_proxyConnection = std::make_unique<CTCPConnection>(&m_server.GetOverlappedManager(), RECV_BUFFER_SIZE);
+	m_proxyConnection = std::make_unique<CTCPConnection>(&m_eventManager, RECV_BUFFER_SIZE);
 
 	std::vector<std::unique_ptr<CJob>> taskList;
 	taskList.reserve(config->packetTaskPoolSize);
@@ -31,19 +33,22 @@ bool CLoginService::OnInit()
 	}
 	m_packetTaskPool.Initialize(std::move(taskList));
 
-	if (!m_executorManager.Initialize(1)) return false;
-	if (!m_executorManager.Start()) return false;
+	if (!m_executorManager.Initialize(1))
+		return false;
+	if (!m_executorManager.Start())
+		return false;
 
-	if (!m_acceptor.Initialize(config->ip, config->port)) return false;
-	m_acceptor.SetCreateConnectionHandler([this](SOCKET _socket, SOCKADDR_IN _addr, CIOCP* _iocp)
+	CIpEndPoint localEndPoint;
+	if (!localEndPoint.Initialize(config->ip, config->port))
+		return false;
+	if (!m_acceptor.Initialize(localEndPoint))
+		return false;
+
+	m_acceptor.SetCreateConnectionHandler([this](CSocket _socket, const CIpEndPoint& _remoteEndPoint, const CIOCP& _iocp)
 		{
 			if (m_proxyConnection->IsConnected())
-			{
-				closesocket(_socket);
 				return;
-			}
-
-			m_proxyConnection->Connect(_socket, _addr, _iocp);
+			m_proxyConnection->Connect(std::move(_socket), _remoteEndPoint, _iocp);
 		});
 	m_acceptor.SetErrorHandler([](DWORD _error)
 		{
@@ -92,7 +97,7 @@ bool CLoginService::OnInit()
 
 bool CLoginService::OnRun()
 {
-	if (!m_acceptor.Start(m_config->postAcceptSize, &m_server.GetIOCP(), &m_server.GetOverlappedManager()))
+	if (!m_acceptor.Start(m_config->postAcceptSize, m_iocp, &m_eventManager))
 		return false;
 
 	std::cout << "RunStart\n";
@@ -101,8 +106,9 @@ bool CLoginService::OnRun()
 	{
 		if (_kbhit())
 		{
-			char ch = _getch();
-			if (ch == 'q' || ch == 'Q') break;
+			const char ch = _getch();
+			if (ch == 'q' || ch == 'Q')
+				break;
 		}
 		Sleep(1000);
 	}
@@ -113,6 +119,8 @@ bool CLoginService::OnRun()
 void CLoginService::OnStop()
 {
 	m_acceptor.Disconnect();
-	if (m_proxyConnection != nullptr) m_proxyConnection->Disconnect();
+	if (m_proxyConnection != nullptr)
+		m_proxyConnection->Disconnect();
+
 	m_executorManager.Stop();
 }

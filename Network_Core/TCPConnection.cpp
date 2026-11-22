@@ -1,213 +1,198 @@
 ﻿#include "TCPConnection.h"
-#include "IOCP.h"
-#include "OverlappedManager.h"
-#include "../Utility_Core/LogManager.h"
-#include "../Common/PACKET.h"
 #include <cassert>
+#include <utility>
+#include "../Utility_Core/LockGuard.h"
 
-CTCPConnection::CTCPConnection(COverlappedManager* _overlappedManager, uint64_t _recvBufferSize):
-	m_overlappedManager(_overlappedManager),
+CTCPConnection::CTCPConnection(CIOCPEventManager* _eventManager, uint64_t _recvBufferSize):
+	m_eventManager(_eventManager),
 	m_recvBuffer(_recvBufferSize)
 {
+	assert(m_eventManager != nullptr);
+	assert(_recvBufferSize > 1);
+
+	InitializeSRWLock(&m_stateLock);
 }
 
-bool CTCPConnection::Connect(SOCKET _socket, SOCKADDR_IN& _addr, CIOCP* _iocp)
+CTCPConnection::~CTCPConnection()
 {
-	eConnectionState expected = eConnectionState::Disconnected;
-	if (!m_state.compare_exchange_strong(expected, eConnectionState::Connected)) return false;
-	m_generation.fetch_add(1, std::memory_order::memory_order_relaxed);
-
-	m_socket = _socket;
-	m_remoteAddr = _addr;
-
-	if (!_iocp->Regist(reinterpret_cast<HANDLE>(m_socket), reinterpret_cast<ULONG_PTR>(this)))
-	{
-		Disconnect();
-		return false;
-	}
-
-	if (!PostRecv())
-	{
-		Disconnect();
-		return false;
-	}
-
-	return true;
+	assert(m_IOpendingCount.load(std::memory_order_acquire) == 0);
 }
 
-bool CTCPConnection::Connect(const std::string& _addr, uint16_t _port, CIOCP* _iocp)
+bool CTCPConnection::Connect(CSocket _socket, const CIpEndPoint& _remoteEndPoint, const CIOCP& _iocp)
 {
-	eConnectionState expected = eConnectionState::Disconnected;
-	if (!m_state.compare_exchange_strong(expected, eConnectionState::Connected)) return false;
-	m_generation.fetch_add(1, std::memory_order::memory_order_relaxed);
-
-	m_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
-	if (m_socket == INVALID_SOCKET)
-	{
-		Disconnect();
+	if (m_eventManager == nullptr || _remoteEndPoint.GetAddress().sin_family != AF_INET)
 		return false;
+
+	if (!_socket.IsValid() || !_iocp.IsInit())
+		return false;
+
+	{
+		CLockGuard lockGuard(m_stateLock);
+
+		if (m_state.load(std::memory_order_acquire) != eConnectionState::Disconnected)
+			return false;
+		if (m_socket.IsValid() || m_IOpendingCount.load(std::memory_order_acquire) != 0)
+			return false;
+		if (!_iocp.Regist(reinterpret_cast<HANDLE>(_socket.GetSocket()), reinterpret_cast<ULONG_PTR>(this)))
+			return false;
+
+		m_socket = std::move(_socket);
+		m_IOpendingCount.fetch_add(1, std::memory_order_relaxed);
+
+		m_remoteEndPoint = _remoteEndPoint;
+		m_generation.fetch_add(1, std::memory_order_relaxed);
+		m_state.store(eConnectionState::Connected, std::memory_order_release);
 	}
 
-	m_remoteAddr = {};
-	m_remoteAddr.sin_family = AF_INET;
-	m_remoteAddr.sin_port = htons(_port);
-	inet_pton(AF_INET, _addr.c_str(), &m_remoteAddr.sin_addr);
+	bool result = PostRecv();
+	if (!result) Disconnect();
+	OnCompleteIO();
 
-	if (SOCKET_ERROR == connect(m_socket, reinterpret_cast<sockaddr*>(&m_remoteAddr), sizeof(m_remoteAddr)))
-	{
-		Disconnect();
-		return false;
-	}
-
-	if (!_iocp->Regist(reinterpret_cast<HANDLE>(m_socket), reinterpret_cast<ULONG_PTR>(this)))
-	{
-		Disconnect();
-		return false;
-	}
-
-	if (!PostRecv())
-	{
-		Disconnect();
-		return false;
-	}
-
-	return true;
+	return result;
 }
 
-void CTCPConnection::Disconnect()
+bool CTCPConnection::Connect(const CIpEndPoint& _remoteEndPoint, const CIOCP& _iocp)
 {
-	eConnectionState expected = eConnectionState::Connected;
-	if (!m_state.compare_exchange_strong(expected, eConnectionState::Disconnecting, std::memory_order_acq_rel))
+	if (m_eventManager == nullptr || !_iocp.IsInit())
+		return false;
+	if (m_state.load(std::memory_order_acquire) != eConnectionState::Disconnected)
+		return false;
+
+	CSocket socket;
+	if (!socket.Initialize() || !socket.Connect(_remoteEndPoint))
+		return false;
+
+	return Connect(std::move(socket), _remoteEndPoint, _iocp);
+}
+
+bool CTCPConnection::Disconnect()
+{
+	bool result = true;
 	{
-		return;
-	}
-	if (m_socket != INVALID_SOCKET)
-	{
-		closesocket(m_socket);
-		m_socket = INVALID_SOCKET;
+		CLockGuard lockGuard(m_stateLock);
+		if (m_state.load(std::memory_order_acquire) == eConnectionState::Disconnected)
+			return true;
+		if (m_state.load(std::memory_order_acquire) == eConnectionState::Disconnecting && !m_socket.IsValid())
+			return true;
+		m_IOpendingCount.fetch_add(1, std::memory_order_relaxed);
+		m_state.store(eConnectionState::Disconnecting, std::memory_order_release);
+
+		if (m_socket.IsValid())
+			result = m_socket.Close();
 	}
 
-	// 아직 WSASend가 발행되지 않은 패킷
 	m_sendBufferQueue.Clear();
+	OnCompleteIO();
 
-	TryDisconnect();
+	return result;
 }
 
 bool CTCPConnection::IsConnected()
 {
-	if (m_state.load() == eConnectionState::Connected) return true;
-	return false;
+	return m_state.load(std::memory_order_acquire) == eConnectionState::Connected;
 }
 
-uint64_t CTCPConnection::GetGeneration()
+bool CTCPConnection::CanDestroy() noexcept
 {
-	return m_generation.load();
-}
+	CLockGuard lockGuard(m_stateLock, eLockMode::Shared);
 
-int CTCPConnection::Send(char* _packet, int _size)
-{
-	return send(m_socket, _packet, _size, 0);
-}
-
-bool CTCPConnection::PostRecv()
-{
-	if (m_state.load(std::memory_order_acquire) != eConnectionState::Connected) return false;
-
-	WSABUF wsabuf;
-	wsabuf.buf = reinterpret_cast<char*>(m_recvBuffer.GetWritePointer());
-	wsabuf.len = static_cast<ULONG>(m_recvBuffer.GetDirectWriteableSize());
-	if (wsabuf.len == 0) return false;
-
-	WSAOVERLAPPED_EX* overlapped = m_overlappedManager->Acquire();
-	if (overlapped == nullptr) return false;
-
-	overlapped->type = eOverlappedType::Recv;
-	overlapped->owner = this;
-
-	m_IOpendingCount.fetch_add(1, std::memory_order_acq_rel);
-	DWORD flags = 0;
-	if (SOCKET_ERROR == WSARecv(m_socket, &wsabuf, 1, NULL, &flags, static_cast<WSAOVERLAPPED*>(overlapped), nullptr))
-	{
-		if (WSAGetLastError() != WSA_IO_PENDING)
-		{
-			m_overlappedManager->Release(overlapped);
-			OnCompleteIO();
-			return false;
-		}
-	}
-
-	return true;
+	return m_state.load(std::memory_order_acquire) == eConnectionState::Disconnected &&
+		!m_socket.IsValid() && m_IOpendingCount.load(std::memory_order_acquire) == 0;
 }
 
 bool CTCPConnection::PostSend(std::shared_ptr<std::vector<byte>> _packet)
 {
-	if (m_socket == INVALID_SOCKET) return false;
-	if (_packet == nullptr) return false;
-	if (_packet->size() == 0) return false;
-	if (!IsConnected()) return false;
+	if (_packet == nullptr || _packet->empty())
+		return false;
+	{
+		CLockGuard lockGuard(m_stateLock);
 
-	m_sendBufferQueue.Push(_packet);
+		if (!IsConnected())
+			return false;
 
-	return TrySend();
+		m_sendBufferQueue.Push(std::move(_packet));
+		m_IOpendingCount.fetch_add(1, std::memory_order_relaxed);
+	}
+
+	const bool result = TrySend();
+	OnCompleteIO();
+
+	return result;
 }
 
-void CTCPConnection::HandleRecv(WSAOVERLAPPED_EX* _overlapped, DWORD _byteTrans)
+void CTCPConnection::HandleRecv(CRecvEvent& _event, DWORD _byteTrans)
 {
-	m_overlappedManager->Release(_overlapped);
+	m_eventManager->ReleaseRecv(&_event);
 
 	if (_byteTrans == 0)
 	{
 		Disconnect();
-		OnCompleteIO();
 		return;
 	}
-
-	if (m_state.load(std::memory_order_acquire) != eConnectionState::Connected)
-	{
-		OnCompleteIO();
+	if (!IsConnected())
 		return;
-	}
-
 	if (!m_recvBuffer.MoveWritePointer(static_cast<uint64_t>(_byteTrans)))
 	{
 		Disconnect();
-		OnCompleteIO();
 		return;
 	}
 
 	if (m_recvHandler) m_recvHandler();
-
 	if (IsConnected() && !PostRecv()) Disconnect();
-
-	OnCompleteIO();
 }
 
-void CTCPConnection::HandleSend(WSAOVERLAPPED_EX* _overlapped, DWORD _byteTrans)
+void CTCPConnection::HandleSend(CSendEvent& _event)
 {
-	m_overlappedManager->Release(_overlapped);
+	m_eventManager->ReleaseSend(&_event);
 	m_sendPending.store(false, std::memory_order_release);
-	if (m_state.load(std::memory_order_acquire) == eConnectionState::Connected)
-	{
-		TrySend();
-	}
 
-	OnCompleteIO();
+	if (IsConnected()) TrySend();
 }
 
-void CTCPConnection::HandleError(WSAOVERLAPPED_EX* _overlapped, DWORD _error)
+void CTCPConnection::HandleRecvError(CRecvEvent& _event, DWORD _error)
 {
-	const eOverlappedType type = _overlapped->type;
-	if (type == eOverlappedType::Send)
+	m_eventManager->ReleaseRecv(&_event);
+	Disconnect();
+
+	if (m_errorHandler) m_errorHandler(_error);
+}
+
+void CTCPConnection::HandleSendError(CSendEvent& _event, DWORD _error)
+{
+	m_eventManager->ReleaseSend(&_event);
+	Disconnect();
+	m_sendPending.store(false, std::memory_order_release);
+
+	if (m_errorHandler) m_errorHandler(_error);
+}
+
+void CTCPConnection::OnCompleteIO()
+{
 	{
+		CLockGuard lockGuard(m_stateLock);
+
+		const uint64_t pending = m_IOpendingCount.load(std::memory_order_acquire);
+		assert(pending != 0);
+		if (pending == 0)
+			return;
+
+		if (pending != 1 || m_state.load(std::memory_order_acquire) != eConnectionState::Disconnecting || m_socket.IsValid())
+		{
+			m_IOpendingCount.fetch_sub(1, std::memory_order_acq_rel);
+			return;
+		}
+
+		m_recvBuffer.Cleanup();
+		m_sendBufferQueue.Clear();
+		m_remoteEndPoint = {};
 		m_sendPending.store(false, std::memory_order_release);
 	}
 
-	m_overlappedManager->Release(_overlapped);
+	if (m_disconnectHandler) m_disconnectHandler();
 
-	if (m_errorHandler)m_errorHandler(_error);
-
-	Disconnect();
-	OnCompleteIO();
+	CLockGuard lockGuard(m_stateLock);
+	m_state.store(eConnectionState::Disconnected, std::memory_order_release);
+	m_IOpendingCount.fetch_sub(1, std::memory_order_acq_rel);
 }
 
 CRingBuffer& CTCPConnection::GetRecvBuffer()
@@ -215,99 +200,92 @@ CRingBuffer& CTCPConnection::GetRecvBuffer()
 	return m_recvBuffer;
 }
 
+uint64_t CTCPConnection::GetGeneration()
+{
+	return m_generation.load();
+}
+
+bool CTCPConnection::PostRecv()
+{
+	CLockGuard lockGuard(m_stateLock);
+
+	if (!IsConnected())
+		return false;
+
+	uint64_t size = m_recvBuffer.GetDirectWriteableSize();
+	if (size == 0 || size > UINT32_MAX)
+		return false;
+
+	CRecvEvent* event = m_eventManager->AcquireRecv();
+	if (event == nullptr)
+		return false;
+	if (event->Initialize(this, m_recvBuffer.GetWritePointer(), static_cast<ULONG>(size)))
+	{
+		IOCP_CONTEXT& context = event->GetContext();
+		m_IOpendingCount.fetch_add(1, std::memory_order_relaxed);
+
+		if (m_socket.PostRecv(event->GetBuffer(), context.overlapped))
+			return true;
+
+		m_IOpendingCount.fetch_sub(1, std::memory_order_acq_rel);
+	}
+
+	m_eventManager->ReleaseRecv(event);
+	return false;
+}
+
 bool CTCPConnection::TrySend()
 {
-	bool expected = false;
-	if (!m_sendPending.compare_exchange_strong(expected, true)) return true;
-
-	std::shared_ptr<std::vector<byte>> packet;
-	if (!m_sendBufferQueue.Pop(packet))
+	CSendEvent* event = nullptr;
 	{
-		m_sendPending.store(false, std::memory_order_release);
-		if (!m_sendBufferQueue.IsEmpty())
-		{
-			return TrySend();
-		}
+		CLockGuard lockGuard(m_stateLock);
+		if (!IsConnected())
+			return false;
 
-		return true;
-	}
+		bool expected = false;
+		if (!m_sendPending.compare_exchange_strong(expected, true))
+			return true;
 
-	WSAOVERLAPPED_EX* overlapped = m_overlappedManager->Acquire();
-	if (overlapped == nullptr)
-	{
-		m_sendPending.store(false, std::memory_order_release);
-		Disconnect();
-		return false;
-	}
-
-	overlapped->type = eOverlappedType::Send;
-	overlapped->owner = this;
-	overlapped->sendPacket = packet;
-
-	WSABUF wsabuf;
-	wsabuf.buf = reinterpret_cast<char*>(packet->data());
-	wsabuf.len = static_cast<ULONG>(packet->size());
-
-	m_IOpendingCount.fetch_add(1, std::memory_order_acq_rel);
-
-	if (SOCKET_ERROR == WSASend(m_socket, &wsabuf, 1, nullptr, 0, static_cast<WSAOVERLAPPED*>(overlapped), nullptr))
-	{
-		if (WSAGetLastError() != WSA_IO_PENDING)
+		std::shared_ptr<std::vector<byte>> packet;
+		if (!m_sendBufferQueue.Pop(packet))
 		{
 			m_sendPending.store(false, std::memory_order_release);
-			m_overlappedManager->Release(overlapped);
+			return true;
+		}
 
-			OnCompleteIO();
-			Disconnect();
+		event = m_eventManager->AcquireSend();
+		if (event != nullptr)
+		{
+			if (event->Initialize(this, std::move(packet)))
+			{
+				IOCP_CONTEXT& context = event->GetContext();
+				m_IOpendingCount.fetch_add(1, std::memory_order_relaxed);
 
-			return false;
+				if (m_socket.PostSend(event->GetBuffer(), context.overlapped))
+					return true;
+
+				m_IOpendingCount.fetch_sub(1, std::memory_order_acq_rel);
+			}
 		}
 	}
 
-	return true;
-}
-
-void CTCPConnection::OnCompleteIO()
-{
-	m_IOpendingCount.fetch_sub(1, std::memory_order_acq_rel);
-
-	if (m_IOpendingCount.load() == 0) TryDisconnect();
-}
-
-void CTCPConnection::TryDisconnect()
-{
-	if (m_IOpendingCount.load(std::memory_order_acquire) != 0) return;
-
-	eConnectionState expected = eConnectionState::Disconnecting;
-	if (!m_state.compare_exchange_strong(expected, eConnectionState::Disconnected, std::memory_order_acq_rel))
-	{
-		return;
-	}
-
-	m_recvBuffer.Cleanup();
-	m_sendBufferQueue.Clear();
-	m_remoteAddr = {};
+	Disconnect();
 	m_sendPending.store(false, std::memory_order_release);
-
-	if (m_disconnectHandler) m_disconnectHandler();
+	if (event != nullptr) m_eventManager->ReleaseSend(event);
+	return false;
 }
 
 void CTCPConnection::SetDisconnectHandler(std::function<void()> _callback)
 {
-	m_disconnectHandler = _callback;
+	m_disconnectHandler = std::move(_callback);
 }
 
 void CTCPConnection::SetRecvHandler(std::function<void()> _callback)
 {
-	m_recvHandler = _callback;
+	m_recvHandler = std::move(_callback);
 }
-
-//void CTCPConnection::OnSend(std::function<void()> _callback)
-//{
-//	m_onSendListener = _callback;
-//}
 
 void CTCPConnection::SetErrorHandler(std::function<void(DWORD)> _callback)
 {
-	m_errorHandler = _callback;
+	m_errorHandler = std::move(_callback);
 }

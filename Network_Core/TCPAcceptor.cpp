@@ -1,171 +1,196 @@
 ﻿#include "TCPAcceptor.h"
-#include <WS2tcpip.h>
-#include <iostream>
-#include <mswsock.h>
-#include "OverlappedManager.h"
-#include "IOCP.h"
-#include "../Utility_Core/LogManager.h"
+#include <cassert>
+#include <utility>
+#include "../Utility_Core/LockGuard.h"
 
-CTCPAcceptor::CTCPAcceptor(const std::string& _addr, uint16_t _port)
+CTCPAcceptor::CTCPAcceptor()
 {
-	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	m_addr = { 0, };
-	inet_pton(AF_INET, _addr.data(), &m_addr.sin_addr);
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(_port);
+	InitializeSRWLock(&m_stateLock);
+}
+
+CTCPAcceptor::CTCPAcceptor(const CIpEndPoint& _localEndPoint)
+{
+	InitializeSRWLock(&m_stateLock);
+	Initialize(_localEndPoint);
 }
 
 CTCPAcceptor::~CTCPAcceptor()
 {
 	Disconnect();
+	assert(m_IOpendingCount.load(std::memory_order_acquire) == 0);
 }
 
-bool CTCPAcceptor::Initialize(const std::string& _addr, uint16_t _port)
+bool CTCPAcceptor::Initialize(const CIpEndPoint& _localEndPoint)
 {
-	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (m_socket == INVALID_SOCKET) return false;
+	CLockGuard lockGuard(m_stateLock);
 
-	m_addr = { 0, };
-	inet_pton(AF_INET, _addr.data(), &m_addr.sin_addr);
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(_port);
+	if (m_socket.IsValid() || m_IOpendingCount.load(std::memory_order_acquire) != 0)
+		return false;
+
+	if (_localEndPoint.GetAddress().sin_family != AF_INET)
+		return false;
+
+	m_iocp = nullptr;
+	m_eventManager = nullptr;
+	m_localEndPoint = _localEndPoint;
 
 	return true;
 }
 
-bool CTCPAcceptor::Start(uint64_t _postSize, CIOCP* _iocp, COverlappedManager* _overlappedManager)
+bool CTCPAcceptor::Start(uint64_t _postSize, const CIOCP& _iocp, CIOCPEventManager* _eventManager)
 {
-	if (!m_createConnectionHandler) return false;
-	if (!m_errorHandler) return false;
-
-	m_iocp = _iocp;
-	m_overlappedManager = _overlappedManager;
-
-	BOOL reuse = TRUE;
-	if (SOCKET_ERROR == setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse, sizeof(reuse)))
+	if (_postSize == 0 || _eventManager == nullptr || !_iocp.IsInit())
 		return false;
 
-	if (SOCKET_ERROR == bind(m_socket, reinterpret_cast<SOCKADDR*>(&m_addr), sizeof(m_addr)))
-		return false;
+	{
+		CLockGuard lockGuard(m_stateLock);
 
-	if (SOCKET_ERROR == listen(m_socket, SOMAXCONN))
-		//SOMAX 갯수보다 
-		return false;
+		if (m_iocp != nullptr || m_localEndPoint.GetAddress().sin_family != AF_INET)
+			return false;
+		if (m_socket.IsValid() || m_IOpendingCount.load(std::memory_order_acquire) != 0)
+			return false;
+		if (!m_createConnectionHandler || !m_errorHandler)
+			return false;
 
-	if (!m_iocp->Regist(reinterpret_cast<HANDLE>(m_socket), reinterpret_cast<ULONG_PTR>(this)))
-		return false;
+		CSocket socket;
+		if (!socket.Initialize())
+			return false;
+		if (!socket.Bind(m_localEndPoint) || !socket.Listen())
+			return false;
+		if (!_iocp.Regist(reinterpret_cast<HANDLE>(socket.GetSocket()), reinterpret_cast<ULONG_PTR>(this)))
+			return false;
+
+		m_socket = std::move(socket);
+
+		m_iocp = &_iocp;
+		m_eventManager = _eventManager;
+		m_IOpendingCount.fetch_add(1, std::memory_order_relaxed);
+	}
 
 	for (uint64_t i = 0; i < _postSize; ++i)
 	{
-		if (!Accept()) return false;
+		if (!Accept())
+		{
+			Disconnect();
+			OnCompleteIO();
+			return false;
+		}
 	}
 
+	OnCompleteIO();
 	return true;
 }
 
-void CTCPAcceptor::Disconnect()
+bool CTCPAcceptor::Disconnect()
 {
-	if (INVALID_SOCKET != m_socket) closesocket(m_socket);
-	m_socket = INVALID_SOCKET;
+	CLockGuard lockGuard(m_stateLock);
+
+	if (!m_socket.IsValid())
+		return true;
+
+	return m_socket.Close();
 }
 
-void CTCPAcceptor::HandleAccept(WSAOVERLAPPED_EX* _overlapped, DWORD _byteTrans)
+bool CTCPAcceptor::CanDestroy() noexcept
 {
-	if (SOCKET_ERROR == setsockopt(_overlapped->socket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char*)&m_socket, sizeof(m_socket)))
+	CLockGuard lockGuard(m_stateLock, eLockMode::Shared);
+
+	return !m_socket.IsValid() && m_IOpendingCount.load(std::memory_order_acquire) == 0;
+}
+
+void CTCPAcceptor::HandleAccept(CAcceptEvent& _event)
+{
+	bool result = false;
 	{
-		CLogManager::GetInstance().Write(eLogLevel::eERROR,
-			"TCPAcceptor Handle(), setsockopt Error : %d", WSAGetLastError());
-
-		closesocket(_overlapped->socket);
-		m_overlappedManager->Release(_overlapped);
-
-		Accept();
-
+		CLockGuard lockGuard(m_stateLock, eLockMode::Shared);
+		result = _event.GetSocket().ApplyAcceptContext(m_socket);
+	}
+	if (!result)
+	{
+		m_eventManager->ReleaseAccept(&_event);
+		Disconnect();
+		return;
+	}
+	CIpEndPoint remoteEndPoint;
+	if (!_event.GetRemoteEndPoint(remoteEndPoint))
+	{
+		HandleError(_event, WSAEFAULT);
 		return;
 	}
 
-	SOCKET		 remoteSocket = _overlapped->socket;
-	SOCKADDR_IN* remoteAddr = nullptr;
-	SOCKADDR_IN* localAddr = nullptr;
-	int	remoteAddrLen = 0;
-	int localAddrLen = 0;
-	GetAcceptExSockaddrs(_overlapped->addrBuf, 0, sizeof(sockaddr_in) + 16, sizeof(sockaddr_in) + 16,
-		(SOCKADDR**)&localAddr, &localAddrLen, (SOCKADDR**)&remoteAddr, &remoteAddrLen);
+	CSocket socket = _event.TakeSocket();
+	m_eventManager->ReleaseAccept(&_event);
+	m_createConnectionHandler(std::move(socket), remoteEndPoint, *m_iocp);
 
-	m_overlappedManager->Release(_overlapped);
-
-	m_createConnectionHandler(remoteSocket, *remoteAddr, m_iocp);
-
-	Accept();
+	if (!Accept()) Disconnect();
 }
 
-void CTCPAcceptor::HandleError(WSAOVERLAPPED_EX* _overlapped, DWORD _error)
+void CTCPAcceptor::HandleError(CAcceptEvent& _event, DWORD _error)
 {
-	closesocket(_overlapped->socket);
-	m_overlappedManager->Release(_overlapped);
-
+	m_eventManager->ReleaseAccept(&_event);
+	{
+		CLockGuard lockGuard(m_stateLock, eLockMode::Shared);
+		if (!m_socket.IsValid())
+			return;
+	}
 	switch (_error)
 	{
 	case WSAECONNRESET:
 	case WSAECONNABORTED:
 	case ERROR_NETNAME_DELETED:
-		Accept();
+		if (!Accept()) Disconnect();
 		break;
-
 	default:
 		m_errorHandler(_error);
 		break;
 	}
 }
 
-SOCKET CTCPAcceptor::GetSocket()
+void CTCPAcceptor::OnCompleteIO()
 {
-	return m_socket;
+	CLockGuard lockGuard(m_stateLock);
+
+	const uint64_t pending = m_IOpendingCount.load(std::memory_order_acquire);
+	assert(pending != 0);
+
+	if (pending == 0)
+		return;
+
+	m_IOpendingCount.fetch_sub(1, std::memory_order_acq_rel);
 }
 
-void CTCPAcceptor::SetCreateConnectionHandler(std::function<void(SOCKET, SOCKADDR_IN, CIOCP*)> _callback)
+void CTCPAcceptor::SetCreateConnectionHandler(std::function<void(CSocket, const CIpEndPoint&, const CIOCP&)> _callback)
 {
-	m_createConnectionHandler = _callback;
+	m_createConnectionHandler = std::move(_callback);
 }
 
 void CTCPAcceptor::SetErrorHandler(std::function<void(DWORD)> _callback)
 {
-	m_errorHandler = _callback;
+	m_errorHandler = std::move(_callback);
 }
 
 bool CTCPAcceptor::Accept()
 {
-	WSAOVERLAPPED_EX* overlapped = m_overlappedManager->Acquire();
-	if (!overlapped) return false;
+	CLockGuard lockGuard(m_stateLock);
 
-	overlapped->type = eOverlappedType::Accept;
-	overlapped->owner = this;
-	overlapped->socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
-	
-	if (overlapped->socket == INVALID_SOCKET)
-	{
-		m_overlappedManager->Release(overlapped);
+	if (!m_socket.IsValid())
 		return false;
-	}
 
-	if (!AcceptEx(m_socket, overlapped->socket,
-		overlapped->addrBuf, 0,
-		sizeof(SOCKADDR_IN) + 16,
-		sizeof(SOCKADDR_IN) + 16,
-		NULL,
-		static_cast<WSAOVERLAPPED*>(overlapped)))
+	CAcceptEvent* event = m_eventManager->AcquireAccept();
+	if (event == nullptr)
+		return false;
+
+	if (event->Initialize(this))
 	{
-		if (WSAGetLastError() != WSA_IO_PENDING)
-		{
-			CLogManager::GetInstance().Write(eLogLevel::eERROR,
-				"TCPAcceptor PostAccept() AcceptEx fail : %d", WSAGetLastError());
-			
-			closesocket(overlapped->socket);
-			m_overlappedManager->Release(overlapped);
+		IOCP_CONTEXT& context = event->GetContext();
+		m_IOpendingCount.fetch_add(1, std::memory_order_relaxed);
 
-			return false;
-		}
+		if (m_socket.PostAccept(event->GetSocket(), event->GetAddressBuffer(), event->GetAddressBufferSize(),context.overlapped))
+			return true;
+
+		m_IOpendingCount.fetch_sub(1, std::memory_order_acq_rel);
 	}
 
-	return true;
+	m_eventManager->ReleaseAccept(event);
+	return false;
 }

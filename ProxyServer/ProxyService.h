@@ -30,5 +30,5 @@ protected:
 
 private:
 	void InitializeServerHandler(CTCPConnection* _connection);
-	void QueueServerPacket(CTCPConnection* _connection, std::vector<byte>&& _packet);
+	void AddServerPacketTask(CTCPConnection* _connection, std::vector<byte>&& _packet);
 };

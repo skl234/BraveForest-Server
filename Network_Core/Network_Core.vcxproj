@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,22 +19,32 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="IOCPServer.cpp" />
-    <ClCompile Include="IOCPTPSManager.cpp" />
+    <ClCompile Include="AcceptEvent.cpp" />
+    <ClCompile Include="IpEndPoint.cpp" />
+    <ClCompile Include="IOCPEvent.cpp" />
+    <ClCompile Include="IOCPEventManager.cpp" />
+    <ClCompile Include="IOCPWorkerManager.cpp" />
+    <ClCompile Include="RecvEvent.cpp" />
+    <ClCompile Include="SendEvent.cpp" />
     <ClCompile Include="ServerService.cpp" />
-    <ClCompile Include="OverlappedManager.cpp" />
+    <ClCompile Include="Socket.cpp" />
     <ClCompile Include="TCPAcceptor.cpp" />
     <ClCompile Include="TCPConnection.cpp" />
     <ClCompile Include="IOCP.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AcceptEvent.h" />
+    <ClInclude Include="IpEndPoint.h" />
+    <ClInclude Include="IOCPEventManager.h" />
     <ClInclude Include="INI_CONFIG.h" />
-    <ClInclude Include="IOCPServer.h" />
-    <ClInclude Include="IOCPTPSManager.h" />
+    <ClInclude Include="IOCPEvent.h" />
+    <ClInclude Include="IOCPContext.h" />
+    <ClInclude Include="IOCPWorkerManager.h" />
+    <ClInclude Include="RecvEvent.h" />
+    <ClInclude Include="SendEvent.h" />
     <ClInclude Include="ServerService.h" />
+    <ClInclude Include="Socket.h" />
     <ClInclude Include="IOCP_TPS.h" />
-    <ClInclude Include="OverlappedEx.h" />
-    <ClInclude Include="OverlappedManager.h" />
     <ClInclude Include="TCPAcceptor.h" />
     <ClInclude Include="TCPConnection.h" />
     <ClInclude Include="IOCP.h" />

@@ -4,21 +4,21 @@
 #include <memory>
 #include "../Network_Core/TCPConnection.h"
 #include "../Network_Core/IOCP.h"
-#include "../Network_Core/OverlappedManager.h"
+#include "../Network_Core/IOCPEventManager.h"
 #include "../Common/BACK_SERVER_INFO.h"
 
 class CServerConnectionManager
 {
 private:
-	std::unique_ptr<CTCPConnection>				m_loginServerConnection;
-	std::unique_ptr<CTCPConnection>				m_worldServerConnection;
-	std::vector<std::unique_ptr<CTCPConnection>>	m_zoneServerConnectionList;
+	std::unique_ptr<CTCPConnection>				 m_loginServerConnection;
+	std::unique_ptr<CTCPConnection>				 m_worldServerConnection;
+	std::vector<std::unique_ptr<CTCPConnection>> m_zoneServerConnectionList;
 
 public:
 	CServerConnectionManager() = default;
 	~CServerConnectionManager() = default;
 
-	bool Initialize(CIOCP* _iocp, COverlappedManager* _overlManager, const std::vector<BACK_SERVER_INFO>& _infoList);
+	bool Initialize(const CIOCP& _iocp, CIOCPEventManager* _eventManager, const std::vector<BACK_SERVER_INFO>& _infoList);
 	void DisconnectAll();
 
 	CTCPConnection* GetLoginConnection();

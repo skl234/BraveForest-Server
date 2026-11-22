@@ -19,6 +19,10 @@ public:
 	template<typename _T>
 	void Add(_T _func);
 	void AllJoin();
+
+
+	//
+	
 };
 
 template<typename _T>

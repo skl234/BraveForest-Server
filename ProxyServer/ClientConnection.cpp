@@ -1,14 +1,7 @@
 ﻿#include "ClientConnection.h"
-#include "ClientConnectionManager.h"
-#include "../Common/PACKET_HEADER.h"
-#include "../Utility_Core/LogManager.h"
-#include "Monitor.h"
-#include <vector>
 
-CClientConnection::CClientConnection(const uint64_t _sessionId, COverlappedManager* _overlManager, uint64_t _recvBufferSize):
-	CTCPConnection(_overlManager, _recvBufferSize),
-	m_sessionId(_sessionId),
-	m_accountIndex(NULL)
+CClientConnection::CClientConnection(CIOCPEventManager* _eventManager, uint64_t _recvBufferSize):
+	CTCPConnection(_eventManager, _recvBufferSize)
 {
 }
 
@@ -17,15 +10,14 @@ CClientConnection::~CClientConnection()
 	Disconnect();
 }
 
-void CClientConnection::SendMonitorPacket()
+void CClientConnection::SetSessionId(uint64_t _sessionId)
 {
-	std::vector<byte> packet = CMonitor::GetInstance().GetMonitorPacket();
-	Send(reinterpret_cast<char*>(packet.data()), packet.size());
+	m_sessionId.store(_sessionId);
 }
 
 uint64_t CClientConnection::GetSessionId()
 {
-	return m_sessionId;
+	return m_sessionId.load();
 }
 
 void CClientConnection::SetAccountIndex(uint64_t _index)
@@ -65,6 +57,17 @@ bool CClientConnection::TryStartLogin()
 	return m_loginPending.compare_exchange_strong(expected, true);
 }
 
-bool CClientConnection::IsLoginPending() { return m_loginPending.load(); }
-void CClientConnection::SetLoginPending(bool _pending) { m_loginPending.store(_pending); }
-bool CClientConnection::SetAcquired(bool _acquired) { return m_acquired.exchange(_acquired); }
+bool CClientConnection::IsLoginPending()
+{
+	return m_loginPending.load();
+}
+
+void CClientConnection::SetLoginPending(bool _pending)
+{
+	m_loginPending.store(_pending);
+}
+
+bool CClientConnection::SetAcquired(bool _acquired)
+{
+	return m_acquired.exchange(_acquired);
+}

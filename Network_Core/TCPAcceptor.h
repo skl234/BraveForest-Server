@@ -1,38 +1,41 @@
 ﻿#pragma once
-#include <WinSock2.h>
-#include <string>
 #include <functional>
+#include <atomic>
+#include "Socket.h"
 #include "IOCP.h"
-#include "OverlappedManager.h"
-#include "../Utility_Core/UtilityMacros.h"
+#include "IOCPEventManager.h"
 
 class CTCPAcceptor
 {
 protected:
-	CIOCP*				m_iocp = nullptr;
-	COverlappedManager* m_overlappedManager = nullptr;
+	SRWLOCK								m_stateLock;
 
-	SOCKET				m_socket = INVALID_SOCKET;
-	SOCKADDR_IN			m_addr = { 0, };
+	CSocket								m_socket;
+	CIpEndPoint							m_localEndPoint;
+	std::atomic<uint64_t>				m_IOpendingCount = 0;
 
-	std::function<void(SOCKET, SOCKADDR_IN, CIOCP*)> m_createConnectionHandler;
-	std::function<void(DWORD)>						 m_errorHandler;
+	const CIOCP*						m_iocp = nullptr;
+	CIOCPEventManager*					m_eventManager = nullptr;
+
+	std::function<void(CSocket, const CIpEndPoint&, const CIOCP&)> m_createConnectionHandler;
+	std::function<void(DWORD)>			m_errorHandler;
 
 public:
-	CTCPAcceptor() = default;
-	CTCPAcceptor(const std::string& _addr, uint16_t _port);
+	CTCPAcceptor();
+	explicit CTCPAcceptor(const CIpEndPoint& _localEndPoint);
 	virtual ~CTCPAcceptor();
 
-	bool Initialize(const std::string& _addr, uint16_t _port);
-	bool Start(uint64_t _postSize, CIOCP* _iocp, COverlappedManager* _overlappedManager);
-	void Disconnect();
-	void HandleAccept(WSAOVERLAPPED_EX* _overlapped, DWORD _byteTrans);
-	void HandleError(WSAOVERLAPPED_EX* _overlapped, DWORD _error);
-	
-	SOCKET GetSocket();
+	bool Initialize(const CIpEndPoint& _localEndPoint);
+	bool Start(uint64_t _postSize, const CIOCP& _iocp, CIOCPEventManager* _eventManager);
+	bool Disconnect();
+	bool CanDestroy() noexcept;
+
+	void HandleAccept(CAcceptEvent& _event);
+	void HandleError(CAcceptEvent& _event, DWORD _error);
+	void OnCompleteIO();
 
 public:
-	void SetCreateConnectionHandler(std::function<void(SOCKET, SOCKADDR_IN, CIOCP*)> _callback);
+	void SetCreateConnectionHandler(std::function<void(CSocket, const CIpEndPoint&, const CIOCP&)> _callback);
 	void SetErrorHandler(std::function<void(DWORD)> _callback);
 
 private:

@@ -8,7 +8,7 @@ CPacketTask::CPacketTask(CJobPool* _pool,
 	CClientConnectionManager* _clientConnManager,
 	CServerConnectionManager* _serverConnManager):
 	m_owner(nullptr),
-	m_generation(NULL),
+	m_generation(0),
 	m_type(eOwnerType::None),
 	m_jobPool(_pool),
 	m_clientConnManager(_clientConnManager),
@@ -77,22 +77,6 @@ void CPacketTask::Execute()
 	if (m_type == eOwnerType::Client) ExecuteC2S();
 	if (m_type == eOwnerType::Server) ExecuteS2C();
 	Cleanup();
-}
-
-void CPacketTask::OnDisconnected()
-{
-	CClientConnection* connection = static_cast<CClientConnection*>(m_owner);
-	if (connection->IsLoginPending()) return;
-	if (connection->GetAccountIndex() == 0)
-	{
-		m_clientConnManager->Release(connection);
-		return;
-	}
-	if (!connection->TryStartLogout()) return;
-	PACKET_S2S_LEAVE_WORLD send;
-	send.proxyHeader = {connection->GetSessionId(), connection->GetAccountIndex()};
-	CTCPConnection* world = m_serverConnManager->GetWorldConnection();
-	if (world != nullptr) world->PostSend(MakeShared(send));
 }
 
 void CPacketTask::ExecuteC2S()
@@ -234,11 +218,27 @@ void CPacketTask::ExecuteS2C()
 	client->PostSend(send);
 }
 
+void CPacketTask::OnDisconnected()
+{
+	CClientConnection* connection = static_cast<CClientConnection*>(m_owner);
+	if (connection->IsLoginPending()) return;
+	if (connection->GetAccountIndex() == 0)
+	{
+		m_clientConnManager->Release(connection);
+		return;
+	}
+	if (!connection->TryStartLogout()) return;
+	PACKET_S2S_LEAVE_WORLD send;
+	send.proxyHeader = { connection->GetSessionId(), connection->GetAccountIndex() };
+	CTCPConnection* world = m_serverConnManager->GetWorldConnection();
+	if (world != nullptr) world->PostSend(MakeShared(send));
+}
+
 void CPacketTask::Cleanup()
 {
 	m_packet.clear();
 	m_owner = nullptr;
-	m_generation = NULL;
+	m_generation = 0;
 	m_type = eOwnerType::None;
 
 	m_jobPool->Release(this);

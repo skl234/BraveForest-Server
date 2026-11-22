@@ -5,19 +5,19 @@
 class CClientConnection : public CTCPConnection
 {
 private:
-	uint64_t			  m_sessionId;
-	std::atomic<uint64_t> m_accountIndex;	//NULL : Login X
-	std::atomic<uint64_t> m_zoneId = NULL;	
+	std::atomic<uint64_t> m_sessionId = 0;
+	std::atomic<uint64_t> m_accountIndex = 0;	// 0 : Login X
+	std::atomic<uint64_t> m_zoneId = 0;
 	std::atomic<bool>	  m_logoutPending = false;
 	std::atomic<bool>	  m_loginPending = false;
 	std::atomic<bool>	  m_acquired = false;
 	
 public:
-	CClientConnection(const uint64_t _sessionId, COverlappedManager* _overlManager, uint64_t _recvBufferSize);
+	CClientConnection(CIOCPEventManager* _eventManager, uint64_t _recvBufferSize);
 	~CClientConnection() override;
 
 public:
-	void	 SendMonitorPacket();
+	void	 SetSessionId(uint64_t _sessionId);
 	uint64_t GetSessionId();
 	void	 SetAccountIndex(uint64_t _index);
 	uint64_t GetAccountIndex();

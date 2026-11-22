@@ -2,8 +2,10 @@
 
 constexpr uint64_t RECV_BUFFER_SIZE = 1024 * 400;
 
-bool CServerConnectionManager::Initialize(CIOCP* _iocp, COverlappedManager* _overlManager, const std::vector<BACK_SERVER_INFO>& _infoList)
+bool CServerConnectionManager::Initialize(const CIOCP& _iocp, CIOCPEventManager* _eventManager, const std::vector<BACK_SERVER_INFO>& _infoList)
 {
+	if (_eventManager == nullptr) return false;
+
 	uint64_t maxZoneId = 0;
 	uint64_t infoSize = static_cast<uint64_t>(_infoList.size());
 	for (uint64_t i = 0; i < infoSize; ++i)
@@ -20,8 +22,15 @@ bool CServerConnectionManager::Initialize(CIOCP* _iocp, COverlappedManager* _ove
 	uint64_t size = static_cast<uint64_t>(_infoList.size());
 	for (uint64_t i = 0; i < size; ++i)
 	{
-		std::unique_ptr<CTCPConnection> connection = std::make_unique<CTCPConnection>(_overlManager, RECV_BUFFER_SIZE);
-		if (!connection->Connect(_infoList[i].ip, _infoList[i].port, _iocp))
+		CIpEndPoint remoteEndPoint;
+		if (!remoteEndPoint.Initialize(_infoList[i].ip, _infoList[i].port))
+		{
+			result = false;
+			break;
+		}
+
+		std::unique_ptr<CTCPConnection> connection = std::make_unique<CTCPConnection>(_eventManager, RECV_BUFFER_SIZE);
+		if (!connection->Connect(remoteEndPoint, _iocp))
 		{
 			result = false;
 			break;
